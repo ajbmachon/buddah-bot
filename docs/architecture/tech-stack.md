@@ -24,7 +24,7 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 | **CI/CD** | Vercel (built-in) | N/A | Continuous deployment | Auto-deploy on git push, preview deployments, zero config |
 | **Monitoring** | Vercel Analytics | N/A | Basic metrics and logs | Built-in function logs, error tracking, sufficient for MVP |
 | **Logging** | Vercel Logs | N/A | Centralized logging | Serverless function logs, accessible via Vercel dashboard |
-| **CSS Framework** | Tailwind CSS | 3.4.x | Utility-first styling | Using v3 legacy (stable), v4 is major rewrite with breaking changes - migrate later if needed |
+| **CSS Framework** | Tailwind CSS | 4.1.14 | Utility-first styling | Latest v4 with CSS-first config, installed by Assistant UI CLI - modern rewrite with improved performance |
 
 ## Critical Version Notes
 
@@ -34,10 +34,10 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 - Breaking changes from v4: New cookie names, import paths
 - **Decision:** Use beta - stable enough for greenfield project
 
-**Tailwind CSS v3 vs v4:**
-- **v4.1.13** is latest (major rewrite, CSS-first config)
+**Tailwind CSS v4:**
+- **v4.1.14** installed (major rewrite, CSS-first config)
 - **v3.4.x** is legacy but stable
-- **Decision:** Start with v3.4.x to avoid migration complexity in MVP
+- **Decision:** Assistant UI CLI installed v4 automatically - using modern version with improved performance and DX. CSS-first config is more intuitive for MVP development.
 
 **Turbopack Status:**
 - **Dev mode:** Stable (`next dev --turbopack`) - 3.78x faster builds
@@ -56,15 +56,8 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 ## Installation Commands
 
 ```bash
-# Core framework
-npm install next@15.5.4 react@latest react-dom@latest
-
-# TypeScript
-npm install -D typescript@5.9.3 @types/react @types/react-dom @types/node
-
-# UI and styling
-npm install @assistant-ui/react@0.11.10
-npm install tailwindcss@3.4 postcss autoprefixer
+# Assistant UI - use CLI (installs all dependencies automatically)
+npx assistant-ui@latest init
 
 # Authentication
 npm install next-auth@beta

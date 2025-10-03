@@ -2,158 +2,175 @@
 
 ## Component Organization
 
-Assistance UI provides pre-built chat components. We customize styling via Tailwind and add minimal custom components.
+Assistance UI provides pre-built chat components via the CLI. This creates a framework-specific organization structure that we adopt for the MVP.
 
-**Directory Structure:**
+**Actual Directory Structure (CLI-generated):**
 ```
 app/
-├── (auth)/
+├── (auth)/                      # Auth route group (future stories)
 │   ├── login/
-│   │   └── page.tsx              # Login page
+│   │   └── page.tsx             # Login page
 │   └── auth/
 │       └── error/
-│           └── page.tsx          # Auth error page
-├── (chat)/
-│   └── page.tsx                  # Main chat page (Assistance UI)
-├── layout.tsx                    # Root layout (providers)
+│           └── page.tsx         # Auth error page
+├── page.tsx                     # Root page → renders Assistant component
+├── assistant.tsx                # Main chat interface (Assistance UI runtime)
+├── layout.tsx                   # Root layout (providers)
+├── globals.css                  # Global styles
 └── api/
     ├── chat/
-    │   └── route.ts              # Edge streaming endpoint
+    │   └── route.ts             # Edge streaming endpoint (AI SDK integration)
     └── auth/[...nextauth]/
-        └── route.ts              # Auth handler
+        └── route.ts             # Auth handler
 
 components/
-├── chat/
-│   ├── Thread.tsx                # Thread wrapper (Assistance UI)
-│   ├── Composer.tsx              # Message input (Assistance UI)
-│   ├── UserMessage.tsx           # User message bubble
-│   └── AssistantMessage.tsx      # AI message bubble
-└── auth/
-    └── SignInButtons.tsx         # Login buttons
+├── assistant-ui/                # Assistance UI customizations/overrides
+│   ├── thread.tsx               # Thread component override
+│   ├── thread-list.tsx          # Thread history list
+│   ├── threadlist-sidebar.tsx  # Sidebar with thread list
+│   ├── markdown-text.tsx        # Markdown message renderer
+│   ├── attachment.tsx           # File attachment UI
+│   ├── tool-fallback.tsx        # Tool execution fallback
+│   └── tooltip-icon-button.tsx  # Icon buttons with tooltips
+└── ui/                          # shadcn/ui primitives
+    ├── button.tsx
+    ├── avatar.tsx
+    ├── dialog.tsx
+    ├── sheet.tsx
+    ├── sidebar.tsx
+    ├── input.tsx
+    ├── separator.tsx
+    ├── skeleton.tsx
+    ├── tooltip.tsx
+    └── breadcrumb.tsx
+
+hooks/
+└── use-mobile.ts                # Mobile detection hook
 
 lib/
-├── auth.ts                       # Auth.js config
-├── prompts.ts                    # System prompts
-└── types.ts                      # Shared TypeScript types
+├── utils.ts                     # Utility functions (cn, etc.)
+├── auth.ts                      # Auth.js config (future)
+├── prompts.ts                   # System prompts (future)
+└── types.ts                     # Shared TypeScript types (future)
 ```
+
+### Organizational Philosophy
+
+**Framework-First Structure:**
+- `components/assistant-ui/` contains Assistance UI component customizations
+- `components/ui/` contains shadcn/ui primitive components
+- Future feature-specific components (auth, settings) will create new folders as needed
+
+**Why This Structure:**
+- Assistant UI CLI generates this pattern automatically
+- Follows framework conventions for easier upgrades
+- Clear separation: framework overrides vs. primitive UI components vs. feature components
 
 ---
 
 ## Component Templates
 
 ### Main Chat Page
+
+**Current Implementation:**
 ```typescript
-// app/(chat)/page.tsx
+// app/page.tsx
+import { Assistant } from "./assistant";
+
+export default function Home() {
+  return <Assistant />;
+}
+```
+
+### Assistant Component (Main Chat Interface)
+
+```typescript
+// app/assistant.tsx
 "use client";
 
-import { useDataStreamRuntime } from "@assistant-ui/react-data-stream";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { Thread } from "@/components/chat/Thread";
+import {
+  useChatRuntime,
+  AssistantChatTransport,
+} from "@assistant-ui/react-ai-sdk";
+import { Thread } from "@/components/assistant-ui/thread";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { ThreadListSidebar } from "@/components/assistant-ui/threadlist-sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
-export default function ChatPage() {
-  const runtime = useDataStreamRuntime({
-    api: "/api/chat",
+export const Assistant = () => {
+  const runtime = useChatRuntime({
+    transport: new AssistantChatTransport({
+      api: "/api/chat",
+    }),
   });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <main className="h-screen bg-gray-50">
-        <Thread />
-      </main>
+      <SidebarProvider>
+        <div className="flex h-dvh w-full pr-0.5">
+          <ThreadListSidebar />
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">
+                      BuddahBot
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Chat</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </header>
+            <div className="flex-1 overflow-hidden">
+              <Thread />
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     </AssistantRuntimeProvider>
   );
-}
+};
 ```
 
-### Thread Component
+### API Route (Chat Streaming)
+
 ```typescript
-// components/chat/Thread.tsx
-"use client";
+// app/api/chat/route.ts
+import { openai } from "@ai-sdk/openai";
+import { streamText, UIMessage, convertToModelMessages } from "ai";
 
-import { ThreadPrimitive } from "@assistant-ui/react";
-import { Composer } from "./Composer";
-import { UserMessage } from "./UserMessage";
-import { AssistantMessage } from "./AssistantMessage";
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json();
 
-export function Thread() {
-  return (
-    <ThreadPrimitive.Root className="h-full flex flex-col">
-      <ThreadPrimitive.Viewport className="flex-1 overflow-y-auto p-4">
-        <ThreadPrimitive.Empty>
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-center">
-              Ask a question to begin your spiritual wisdom conversation
-            </p>
-          </div>
-        </ThreadPrimitive.Empty>
+  const result = streamText({
+    model: openai("gpt-4"), // Will be replaced with Nous Hermes-4
+    messages: convertToModelMessages(messages),
+  });
 
-        <ThreadPrimitive.Messages
-          components={{
-            UserMessage,
-            AssistantMessage,
-          }}
-        />
-      </ThreadPrimitive.Viewport>
-
-      <Composer />
-    </ThreadPrimitive.Root>
-  );
+  return result.toUIMessageStreamResponse();
 }
 ```
 
-### Composer Component
-```typescript
-// components/chat/Composer.tsx
-"use client";
-
-import { ComposerPrimitive } from "@assistant-ui/react";
-
-export function Composer() {
-  return (
-    <ComposerPrimitive.Root className="border-t border-gray-200 bg-white p-4">
-      <div className="max-w-3xl mx-auto">
-        <ComposerPrimitive.Input
-          className="w-full resize-none border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Ask your question..."
-          rows={3}
-        />
-        <div className="mt-2 flex justify-end">
-          <ComposerPrimitive.Send className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-            Send
-          </ComposerPrimitive.Send>
-        </div>
-      </div>
-    </ComposerPrimitive.Root>
-  );
-}
-```
-
-### Message Components
-```typescript
-// components/chat/UserMessage.tsx
-import { MessagePrimitive } from "@assistant-ui/react";
-
-export function UserMessage() {
-  return (
-    <MessagePrimitive.Root className="flex justify-end mb-4">
-      <div className="bg-blue-600 text-white rounded-lg p-4 max-w-[80%]">
-        <MessagePrimitive.Content />
-      </div>
-    </MessagePrimitive.Root>
-  );
-}
-
-// components/chat/AssistantMessage.tsx
-export function AssistantMessage() {
-  return (
-    <MessagePrimitive.Root className="flex justify-start mb-4">
-      <div className="bg-white border border-gray-200 rounded-lg p-4 max-w-[80%] prose prose-sm">
-        <MessagePrimitive.Content />
-      </div>
-    </MessagePrimitive.Root>
-  );
-}
-```
+**Note:** This placeholder will be replaced in Story 2.1 with Nous API integration and system prompt injection.
 
 ---
 
@@ -161,13 +178,13 @@ export function AssistantMessage() {
 
 **No external state management library needed.**
 
-Assistance UI Runtime handles all chat state internally:
+Assistance UI Runtime handles all chat state internally via the `useChatRuntime` hook:
 - Message history
 - Streaming status
+- Thread management
 - Composer text
-- Thread branching
 
-**Access state (read-only):**
+**Access chat state (read-only):**
 ```typescript
 import { useThread } from "@assistant-ui/react";
 
@@ -198,9 +215,9 @@ function Controls() {
 }
 ```
 
-**Auth session (React Context):**
+**Auth session (React Context - future):**
 ```typescript
-// app/layout.tsx
+// app/layout.tsx (future Story 1.2)
 import { SessionProvider } from "next-auth/react";
 
 export default function RootLayout({ children }) {
@@ -211,14 +228,13 @@ export default function RootLayout({ children }) {
   );
 }
 
-// components/UserProfile.tsx
+// Usage in components
 "use client";
 
 import { useSession } from "next-auth/react";
 
 export function UserProfile() {
   const { data: session } = useSession();
-
   return <p>{session?.user?.name}</p>;
 }
 ```
@@ -229,21 +245,20 @@ export function UserProfile() {
 
 Next.js 15 App Router with route groups for organization.
 
-**Route Structure:**
+**Current Route Structure:**
 ```
 app/
-├── (auth)/            # Auth route group (shared layout)
-│   ├── login/
-│   │   └── page.tsx   # /login
-│   └── auth/
-│       └── error/
-│           └── page.tsx # /auth/error
-├── (chat)/            # Chat route group (protected)
-│   └── page.tsx       # / (main chat)
-└── layout.tsx         # Root layout (providers)
+├── page.tsx               # / (root) - Main chat interface
+├── layout.tsx             # Root layout (future: SessionProvider)
+└── (auth)/                # Auth route group (future stories)
+    ├── login/
+    │   └── page.tsx       # /login
+    └── auth/
+        └── error/
+            └── page.tsx   # /auth/error
 ```
 
-**Route Protection (Middleware):**
+**Route Protection (Middleware - Story 1.3):**
 ```typescript
 // middleware.ts
 import { auth } from "@/lib/auth";
@@ -258,7 +273,7 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Protected routes
+  // Protected routes - redirect if not logged in
   if (!isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
@@ -267,9 +282,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
 ```
 
@@ -294,7 +307,7 @@ function Navigation() {
 
 ## Frontend Services Layer
 
-**API Client (fetch wrapper):**
+**API Client (fetch wrapper - optional, not used for chat):**
 ```typescript
 // lib/api-client.ts
 export class APIError extends Error {
@@ -337,7 +350,7 @@ export async function apiRequest<T>(
 **Usage:**
 ```typescript
 // Not needed for chat (Assistance UI handles)
-// But useful for future features
+// But useful for future features like settings persistence
 
 import { apiRequest } from "@/lib/api-client";
 
@@ -348,3 +361,40 @@ async function saveSettings(settings: Settings) {
   });
 }
 ```
+
+---
+
+## Component Customization Strategy
+
+### When to Add Components
+
+**1. Assistant UI Overrides** → `components/assistant-ui/`
+- Customizing thread appearance
+- Adding custom message renderers
+- Overriding default UI behavior
+
+**2. shadcn/ui Additions** → `components/ui/`
+- Adding new primitive components via `npx shadcn@latest add [component]`
+- Never manually create files here
+
+**3. Feature Components** → `components/[feature]/`
+- Auth-related: `components/auth/SignInButtons.tsx`
+- Settings: `components/settings/SettingsPanel.tsx`
+- Mode selection: `components/modes/ModeSelector.tsx`
+
+### Example: Adding Auth Components (Story 1.2)
+
+```
+components/
+├── assistant-ui/          # Existing
+├── ui/                    # Existing
+└── auth/                  # NEW
+    ├── SignInButtons.tsx  # Google + Email sign-in
+    └── UserMenu.tsx       # User dropdown menu
+```
+
+---
+
+## Documentation Note
+
+**2025-10-03:** This file was updated to reflect the actual Assistant UI CLI structure (`components/assistant-ui/`) rather than the originally planned custom structure (`components/chat/`). All code examples now match reality.
