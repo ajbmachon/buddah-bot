@@ -2,7 +2,7 @@
 
 ## System Component Breakdown
 
-BuddahBot architecture consists of 6 major components split across frontend and backend.
+BuddahBot architecture consists of 5 core components split across frontend and backend.
 
 ---
 
@@ -95,9 +95,9 @@ export async function POST(req: Request) {
 
 **Critical Requirements:**
 - Must complete within 25 seconds (Edge timeout)
-- Stateless (no conversation history storage)
+- Stateless (full conversation context sent each request)
 - Error handling mid-stream
-- Rate limiting per user
+- Session validation for security
 
 ---
 
@@ -271,43 +271,6 @@ export function SignInButtons() {
 
 ---
 
-## Component 6: Rate Limiter (Optional for MVP)
-
-**Responsibility:** Prevent abuse via rate limiting
-
-**Key Interfaces:**
-- `checkRateLimit(userId: string): Promise<{ success: boolean }>` - Validate request
-
-**Dependencies:**
-- Upstash Redis (or Vercel KV)
-
-**Technology Stack:**
-- @upstash/ratelimit
-- Edge runtime compatible
-
-**Implementation:**
-```typescript
-// lib/rate-limit.ts
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-export const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "60 s"), // 10 requests per minute
-  analytics: true,
-});
-
-// Usage in /api/chat
-const { success } = await ratelimit.limit(session.user.id);
-if (!success) {
-  return new Response('Rate limit exceeded', { status: 429 });
-}
-```
-
-**MVP Decision:** Optional - add if abuse observed
-
----
-
 ## Component Interaction Diagram
 
 ```mermaid
@@ -325,7 +288,6 @@ graph TD
     Runtime -->|POST /api/chat| StreamProxy[Chat Streaming Proxy<br/>Edge Runtime]
     StreamProxy -->|Validate| Session
     StreamProxy -->|Get Prompt| PromptMgr[System Prompt Manager]
-    StreamProxy -->|Check Limit| RateLimit[Rate Limiter]
     StreamProxy -->|Stream| NousAPI[Nous Portal API]
 
     NousAPI -->|SSE| StreamProxy

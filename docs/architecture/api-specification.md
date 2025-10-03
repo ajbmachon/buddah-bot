@@ -1,144 +1,108 @@
 # API Specification
 
-## REST API: `/api/chat` (OpenAI-Compatible Streaming)
+## Single API Endpoint: `POST /api/chat`
 
-**Base URL:** `https://buddahbot.yourdomain.com/api`
-
-**Endpoint:** `POST /chat`
+**Purpose:** Proxy streaming chat requests to Nous API with system prompt injection
 
 **Runtime:** Vercel Edge (25s timeout)
 
-**Authentication:** Required (JWT session cookie)
+**Authentication:** Required (session cookie)
 
 ---
 
-### Request Format
+## Request
 
 **Headers:**
 ```
 Content-Type: application/json
-Cookie: authjs.session-token=<jwt_token>
+Cookie: authjs.session-token=<jwt>
 ```
 
 **Body:**
 ```json
 {
   "messages": [
-    {
-      "role": "user",
-      "content": "What is the nature of suffering?"
-    }
+    { "role": "user", "content": "What is the nature of suffering?" }
   ]
 }
 ```
 
-**Schema (Zod):**
-```typescript
-const ChatRequestSchema = z.object({
-  messages: z.array(
-    z.object({
-      role: z.enum(['user', 'assistant']),
-      content: z.string().min(1).max(2000)
-    })
-  ).max(20)
-});
-```
+**Rules:**
+- Max 20 messages per request
+- Each message max 2000 characters
+- Only `user` and `assistant` roles
 
 ---
 
-### Response Format (SSE Streaming)
+## Response (Streaming)
 
 **Headers:**
 ```
-Content-Type: text/event-stream; charset=utf-8
-Cache-Control: no-cache, no-transform
+Content-Type: text/event-stream
+Cache-Control: no-cache
 Connection: keep-alive
 ```
 
-**Stream Format:**
+**Stream format (OpenAI-compatible SSE):**
 ```
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1696789012,"model":"Hermes-4-405B","choices":[{"index":0,"delta":{"role":"assistant","content":"**Eckhart"},"finish_reason":null}]}
+data: {"choices":[{"delta":{"role":"assistant","content":"**Eckhart"}}]}
 
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1696789012,"model":"Hermes-4-405B","choices":[{"index":0,"delta":{"content":" Tolle:**"},"finish_reason":null}]}
+data: {"choices":[{"delta":{"content":" Tolle:**"}}]}
 
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1696789012,"model":"Hermes-4-405B","choices":[{"index":0,"delta":{"content":" Suffering"},"finish_reason":null}]}
+data: {"choices":[{"delta":{"content":" Suffering"}}]}
 
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1696789012,"model":"Hermes-4-405B","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+data: {"choices":[{"delta":{},"finish_reason":"stop"}]}
 
 data: [DONE]
 ```
 
+**Client consumption:** Assistance UI handles this automatically.
+
 ---
 
-### Error Responses
+## Errors
 
 **401 Unauthorized:**
 ```json
-{
-  "error": {
-    "code": "unauthorized",
-    "message": "Authentication required",
-    "statusCode": 401
-  }
-}
+{ "error": { "code": "unauthorized", "message": "Please sign in again" } }
 ```
 
 **422 Validation Error:**
 ```json
-{
-  "error": {
-    "code": "validation_error",
-    "message": "Invalid request format",
-    "statusCode": 422,
-    "details": [
-      {
-        "path": ["messages", 0, "content"],
-        "message": "String must contain at least 1 character"
-      }
-    ]
-  }
-}
+{ "error": { "code": "validation_error", "message": "Please check your message" } }
 ```
 
-**429 Rate Limit:**
+**500 Service Error:**
 ```json
-{
-  "error": {
-    "code": "rate_limit_exceeded",
-    "message": "Too many requests",
-    "statusCode": 429
-  }
-}
-```
-
-**500 Internal Error:**
-```json
-{
-  "error": {
-    "code": "internal_error",
-    "message": "An unexpected error occurred",
-    "statusCode": 500
-  }
-}
-```
-
-**504 Timeout:**
-```json
-{
-  "error": {
-    "code": "timeout",
-    "message": "Request timed out after 25 seconds",
-    "statusCode": 504
-  }
-}
+{ "error": { "code": "service_error", "message": "Something went wrong" } }
 ```
 
 ---
 
-### Implementation Notes
+## Implementation Notes
 
-- **System Prompt Injection:** Server injects panel prompt before forwarding to Nous API
-- **Mode Selection:** Read from `process.env.BUDDAHBOT_MODE` (MVP: always "panel")
-- **Streaming:** Pass-through Nous API SSE stream (OpenAI-compatible)
-- **Error Mapping:** Transform Nous API errors to standardized format
-- **Timeout Handling:** Edge runtime 25s limit with heartbeat keepalive
+**Server-side prompt injection:**
+```typescript
+const payload = {
+  model: 'Hermes-4-405B',
+  messages: [
+    { role: 'system', content: getSystemPrompt('panel') },
+    ...userMessages
+  ],
+  stream: true
+};
+```
+
+**Key behaviors:**
+- System prompt never exposed to client
+- Full conversation context sent each request (stateless)
+- Streaming piped directly (no buffering)
+- Nous API errors mapped to standard format
+
+---
+
+## That's It
+
+**This is an internal API** (not public). Formal OpenAPI specs are overkill for MVP.
+
+See PRD Section 8 for full implementation example.

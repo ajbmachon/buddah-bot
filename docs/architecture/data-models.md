@@ -1,18 +1,21 @@
 # Data Models
 
-Since BuddahBot has **no database** in the MVP, this section focuses on **in-memory data structures and API contracts** rather than persistent models.
+## Overview
+
+BuddahBot uses **minimal persistence**:
+- **Session data:** JWT tokens (Auth.js, no database)
+- **Chat history:** Vercel KV (Redis) for message persistence
+- **Temporary state:** Client-side (Assistance UI runtime)
+
+---
 
 ## 1. User (Auth Session)
 
-**Purpose:** Represents authenticated user session (managed by Auth.js)
+**Storage:** JWT token (httpOnly cookie)
 
-**Key Attributes:**
-- `id`: string - Unique user identifier
-- `email`: string | null - User email (from OAuth or magic link)
-- `name`: string | null - Display name (from OAuth profile)
-- `image`: string | null - Profile picture URL (from OAuth)
+**Managed by:** Auth.js
 
-**TypeScript Interface:**
+**Structure:**
 ```typescript
 interface User {
   id: string;
@@ -23,153 +26,100 @@ interface User {
 
 interface Session {
   user: User;
-  expires: string; // ISO 8601 date string
+  expires: string; // ISO 8601
 }
 ```
 
-**Relationships:** None (no persistent storage)
-
-**Notes:**
-- Stored as JWT token (client cookie)
-- No database persistence required
-- Auth.js handles serialization/deserialization
+**Lifespan:** 30 days (configurable in Auth.js)
 
 ---
 
-## 2. ChatMessage
+## 2. ChatMessage (Runtime)
 
-**Purpose:** Represents a single message in the chat thread (used by Assistance UI and Nous API)
+**Storage:** Client memory + Vercel KV
 
-**Key Attributes:**
-- `role`: "system" | "user" | "assistant" - Message sender type
-- `content`: string - Message text content
-- `id`: string (optional) - Client-side message ID for UI tracking
-
-**TypeScript Interface:**
+**Structure:**
 ```typescript
 interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
-  id?: string; // Optional: used by Assistance UI for optimistic updates
-}
-
-interface ChatThread {
-  messages: ChatMessage[];
+  createdAt: string; // ISO 8601
 }
 ```
 
-**Relationships:**
-- Messages form a conversation thread (array structure)
-- System message (panel prompt) prepended server-side
-- No persistence - thread exists only in client memory
-
-**Notes:**
-- Compatible with OpenAI chat completion format
-- Assistance UI manages thread state in browser
-- Server is stateless - receives full thread on each request
+**Usage:**
+- **Client:** Assistance UI manages in-memory thread
+- **Server:** Full thread sent with each request (stateless API)
+- **Persistence:** Saved to Vercel KV after streaming completes
 
 ---
 
-## 3. NousAPIRequest
+## 3. Thread (Chat History)
 
-**Purpose:** Request payload sent to Nous Portal API
+**Storage:** Vercel KV (Redis)
 
-**TypeScript Interface:**
+**Structure:**
+```typescript
+interface Thread {
+  id: string;
+  userId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+**Key pattern:**
+```
+user:{userId}:threads              → Set of thread IDs
+user:{userId}:thread:{threadId}:meta     → Thread metadata
+user:{userId}:thread:{threadId}:messages → List of messages
+```
+
+**TTL:** 90 days auto-expiry
+
+---
+
+## 4. NousAPIRequest
+
+**Transient data structure** (not persisted)
+
 ```typescript
 interface NousAPIRequest {
   model: "Hermes-4-405B" | "Hermes-4-70B";
   messages: ChatMessage[];
-  temperature?: number;
-  max_tokens?: number;
+  temperature: number;
+  max_tokens: number;
   stream: boolean;
-  top_p?: number;
-  frequency_penalty?: number;
-  presence_penalty?: number;
 }
 ```
 
-**Relationships:**
-- Constructed in `/api/chat` Edge route
-- Includes system prompt + user messages
+**Usage:** Constructed in `/api/chat`, sent to Nous API, discarded
 
 ---
 
-## 4. NousAPIResponse (Streaming)
+## 5. NousAPIResponse (Streaming)
 
-**Purpose:** Server-sent events (SSE) response from Nous API
+**Transient data structure** (not persisted)
 
-**TypeScript Interface:**
 ```typescript
-interface StreamChoice {
-  index: number;
-  delta: {
-    role?: "assistant";
-    content?: string;
-  };
-  finish_reason: string | null;
-}
-
 interface NousStreamChunk {
   id: string;
   object: "chat.completion.chunk";
   created: number;
   model: string;
-  choices: StreamChoice[];
+  choices: [{
+    index: number;
+    delta: {
+      role?: "assistant";
+      content?: string;
+    };
+    finish_reason: string | null;
+  }];
 }
 ```
 
-**Relationships:**
-- Streamed as SSE events (data: {...} format)
-- Proxied through `/api/chat` to Assistance UI
-- Final chunk has `finish_reason: "stop"`
-
----
-
-## 5. ConversationMode
-
-**Purpose:** Configuration for different conversation modes (Mode 1/2/3)
-
-**TypeScript Interface:**
-```typescript
-type ModeType = "panel" | "custom" | "wisdom";
-
-interface ConversationMode {
-  mode: ModeType;
-  systemPrompt: string;
-  model: "Hermes-4-405B" | "Hermes-4-70B";
-}
-
-interface ModeConfig {
-  default: ConversationMode;
-  modes: Record<ModeType, ConversationMode>;
-}
-```
-
-**Notes:**
-- MVP uses only "panel" mode
-- Mode 2/3 implementation deferred to iteration 1
-
----
-
-## 6. APIError
-
-**Purpose:** Standardized error format for API responses
-
-**TypeScript Interface:**
-```typescript
-interface APIError {
-  error: {
-    code: string;
-    message: string;
-    statusCode: number;
-    details?: Record<string, any>;
-  };
-}
-```
-
-**Notes:**
-- Used for both client-facing and internal errors
-- Nous API errors are transformed to this format
+**Usage:** Streamed from Nous API, proxied to client, content extracted for persistence
 
 ---
 
@@ -177,31 +127,41 @@ interface APIError {
 
 ```mermaid
 graph LR
-    Client[Client/Assistance UI] -->|ChatMessage[]| Edge[/api/chat Edge]
-    Edge -->|Validate| Session[JWT Session]
-    Edge -->|Build| Request[NousAPIRequest]
-    Request -->|HTTP POST| Nous[Nous API]
-    Nous -->|SSE Stream| Response[NousStreamChunk]
-    Response -->|Proxy| Edge
-    Edge -->|SSE Stream| Client
+    Client[Client] -->|Send messages| API[/api/chat]
+    API -->|Validate| Session[JWT Session]
+    API -->|Proxy| Nous[Nous API]
+    Nous -->|Stream| API
+    API -->|Stream| Client
+    API -->|Save| KV[Vercel KV]
+    Client -->|Load history| API2[/api/threads]
+    API2 -->|Fetch| KV
 ```
 
-**Key Points:**
-- **Type sharing:** All interfaces live in `lib/types.ts` (shared across frontend/backend)
-- **Validation:** Use Zod schemas at API boundaries
+**Key points:**
+- No database needed for MVP
+- Vercel KV handles chat history (simple Redis key-value)
+- JWT sessions mean no user database
+- Full conversation context sent each request (stateless API)
 
-**⚠️ ARCHITECTURE UPDATE REQUIRED:**
-The current design has NO conversation persistence. User correction indicates **conversation history is required**.
+---
 
-**Recommended Changes:**
-1. **Add Database:** Vercel Postgres or Supabase for conversation storage
-2. **Update Data Models:** Add `Conversation` and persistent `Message` entities with user FK
-3. **Modify `/api/chat`:** Save messages before/after streaming
-4. **Update Assistance UI:** Load conversation history on mount
-5. **Add Conversations List:** UI to view/resume past conversations
+## Persistence Implementation
 
-**Implementation Impact:** Medium complexity - requires database setup, schema migration, conversation CRUD APIs.
+**See PRD Section 10** for complete Vercel KV setup:
+- `saveMessage()` - Store message after streaming
+- `getThreadMessages()` - Load thread history
+- `getUserThreads()` - List all user conversations
+- `deleteThread()` - Remove conversation
 
-**Alternative (Simpler):** Use `localStorage` for client-side history (no server persistence, per-device only).
+**Setup time:** 2 minutes (Vercel Dashboard → Create KV)
 
-**Decision needed:** Server-side DB vs client-side `localStorage` for conversation history.
+---
+
+## Future: Migration to Postgres
+
+**Consider migrating when:**
+- Need complex queries (search across conversations)
+- Want analytics on message patterns
+- Require structured relationships
+
+**Current approach is sufficient for MVP.** Keep it simple.

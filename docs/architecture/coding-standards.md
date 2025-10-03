@@ -1,176 +1,134 @@
 # Coding Standards
 
-## Critical Fullstack Rules
+## Philosophy
 
-These rules prevent common mistakes and ensure consistency. Dev agents MUST follow these.
+Follow your global clean code rules (`@rules/clean-code.md`) with these BuddahBot-specific requirements.
 
----
-
-**1. Type Sharing:**
-- All shared types live in `lib/types.ts`
-- Import from single source: `import { ChatMessage } from '@/lib/types'`
-- Never duplicate type definitions across frontend/backend
-
-**2. API Calls:**
-- Never make direct `fetch()` calls from components
-- Use Assistance UI runtime for chat API (handles everything)
-- For future endpoints: Create service layer in `lib/services/`
-
-**3. Environment Variables:**
-- Access via `process.env.VARIABLE_NAME` (never hardcode)
-- Never use `NEXT_PUBLIC_` prefix for secrets
-- Validate env vars at build time (use T3 Env pattern)
-
-**4. Error Handling:**
-- All API routes MUST use standard error format (see API Specification section)
-- Never expose internal error details to client
-- Log errors server-side: `console.error('Context:', error)`
-
-**5. State Management:**
-- Chat state: Managed by Assistance UI runtime (DO NOT create external state)
-- Auth session: Use `useSession()` from next-auth/react
-- Never use Redux/Zustand for this application
-
-**6. System Prompts:**
-- NEVER modify the panel prompt text (PRD requirement)
-- Prompts live in `lib/prompts.ts` as constants
-- Use `getSystemPrompt(mode)` function to retrieve
-
-**7. Runtime Specification:**
-- Chat streaming MUST use Edge runtime: `export const runtime = 'edge'`
-- Auth routes default to Node runtime (no export needed)
-- Never use Node.js APIs in Edge runtime (Buffer, fs, crypto)
-
-**8. Session Validation:**
-- All protected API routes MUST validate session first
-- Use `const session = await auth()` at top of handler
-- Return 401 immediately if session invalid
-
-**9. Streaming Responses:**
-- Never buffer entire stream in memory
-- Pipe directly: `return new Response(upstreamResponse.body, { headers })`
-- Set correct headers: `text/event-stream`, `no-cache`
-
-**10. Authentication:**
-- Use Auth.js helpers: `signIn()`, `signOut()`, `auth()`
-- Never implement custom JWT logic
-- Session cookies managed by Auth.js (do not modify)
+**Remember:** Solo developer, 2-day MVP. Keep it simple.
 
 ---
 
-## Naming Conventions
+## Critical Rules (Must Follow)
+
+### 1. System Prompts: Never Modify
+```typescript
+// ✅ DO: Use exact prompt from lib/prompts.ts
+const prompt = getSystemPrompt('panel');
+
+// ❌ DON'T: Modify or enhance prompts
+const prompt = SYSTEM_PROMPTS.panel + " extra instructions";
+```
+
+**Why:** PRD explicitly requires exact prompt text (proven to work).
+
+---
+
+### 2. Streaming: Use Edge Runtime
+```typescript
+// ✅ DO: Edge runtime for streaming
+export const runtime = 'edge';
+
+export async function POST(req: Request) {
+  // Pipe directly, never buffer
+  return new Response(upstreamResponse.body, { headers });
+}
+
+// ❌ DON'T: Buffer entire stream
+const chunks = [];
+for await (const chunk of stream) chunks.push(chunk);
+```
+
+**Why:** Edge = low latency, global distribution. Buffering = memory issues.
+
+---
+
+### 3. Auth: Validate Sessions First
+```typescript
+// ✅ DO: Check session at top of protected routes
+export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  // ... rest of handler
+}
+
+// ❌ DON'T: Skip session validation
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  // Forgot to check session!
+}
+```
+
+**Why:** Security. All protected routes must validate authentication.
+
+---
+
+### 4. State: Let Assistance UI Handle Chat
+```typescript
+// ✅ DO: Use Assistance UI runtime
+const runtime = useDataStreamRuntime({ api: '/api/chat' });
+const { messages } = useThread();
+
+// ❌ DON'T: Manage chat state manually
+const [messages, setMessages] = useState([]);
+fetch('/api/chat', {...});
+```
+
+**Why:** Assistance UI handles everything (streaming, state, UI). Don't reinvent.
+
+---
+
+## Naming Conventions (Keep Simple)
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| **Components** | PascalCase | `Thread.tsx`, `UserMessage.tsx` |
-| **Hooks** | camelCase with 'use' | `useThread.ts`, `useSession.ts` |
-| **API Routes** | kebab-case folder | `/api/chat/`, `/api/auth/` |
-| **Functions** | camelCase | `getSystemPrompt()`, `validateSession()` |
-| **Constants** | SCREAMING_SNAKE_CASE | `SYSTEM_PROMPTS`, `MAX_MESSAGES` |
-| **Types/Interfaces** | PascalCase | `ChatMessage`, `Session`, `APIError` |
-| **Files (utils)** | kebab-case | `api-client.ts`, `rate-limit.ts` |
+| Components | PascalCase | `Thread.tsx`, `Composer.tsx` |
+| Hooks | camelCase with 'use' | `useThread`, `useSession` |
+| API Routes | lowercase | `/api/chat`, `/api/auth` |
+| Functions | camelCase | `getSystemPrompt()` |
+| Constants | SCREAMING_SNAKE | `SYSTEM_PROMPTS` |
+| Types | PascalCase | `ChatMessage`, `Session` |
 
 ---
 
-## Code Organization Rules
+## File Organization (Basic)
 
-**Import Order:**
 ```typescript
-// 1. External dependencies
+// 1. Imports (external → internal)
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-
-// 2. Internal modules (absolute imports)
 import { ChatMessage } from '@/lib/types';
-import { getSystemPrompt } from '@/lib/prompts';
 
-// 3. Relative imports (same directory)
-import { Thread } from './Thread';
-import styles from './Chat.module.css';
-```
-
-**File Structure (Components):**
-```typescript
-// 1. Imports
-import { ... } from '...';
-
-// 2. Types/Interfaces (if not in lib/types.ts)
-interface ComponentProps {
-  ...
-}
-
-// 3. Component
-export function Component({ props }: ComponentProps) {
+// 2. Component
+export function Component() {
   // Hooks first
   const [state, setState] = useState();
-  const session = useSession();
 
-  // Then functions
+  // Functions second
   const handleClick = () => {...};
 
-  // Finally JSX
+  // JSX last
   return (...);
 }
 ```
 
-**File Structure (API Routes):**
-```typescript
-// 1. Imports
-import { auth } from '@/lib/auth';
+---
 
-// 2. Runtime declaration
-export const runtime = 'edge';
-export const maxDuration = 25;
+## Common Mistakes to Avoid
 
-// 3. Validation schemas
-const RequestSchema = z.object({...});
-
-// 4. Handler
-export async function POST(req: Request) {
-  // Validate session
-  // Validate input
-  // Process request
-  // Return response
-}
-```
+❌ **Don't modify system prompts**
+❌ **Don't manage chat messages in useState**
+❌ **Don't buffer streams**
+❌ **Don't skip session validation**
+❌ **Don't use Node.js APIs in Edge runtime** (Buffer, fs, etc.)
 
 ---
 
-## Anti-Patterns to Avoid
+## When In Doubt
 
-❌ **DON'T:**
-```typescript
-// Don't manage chat messages in external state
-const [messages, setMessages] = useState([]);
+**Ask yourself:**
+- Does this follow global clean code rules?
+- Does this violate one of the 4 critical rules?
+- Am I overengineering this?
 
-// Don't make direct API calls from components
-fetch('/api/chat', {...});
-
-// Don't use dangerouslySetInnerHTML without sanitization
-<div dangerouslySetInnerHTML={{ __html: aiResponse }} />
-
-// Don't buffer streams
-const chunks = [];
-for await (const chunk of stream) chunks.push(chunk);
-
-// Don't modify system prompts
-const prompt = SYSTEM_PROMPTS.panel + " extra instructions";
-```
-
-✅ **DO:**
-```typescript
-// Use Assistance UI runtime for chat state
-const { messages } = useThread();
-
-// Let Assistance UI handle API calls
-const runtime = useDataStreamRuntime({ api: '/api/chat' });
-
-// Render with safe components
-<MessagePrimitive.Content />
-
-// Pipe streams directly
-return new Response(stream.body, { headers });
-
-// Use prompts exactly as defined
-const prompt = getSystemPrompt('panel');
-```
+**Keep it simple.** This is a 2-day MVP for friends/family.
