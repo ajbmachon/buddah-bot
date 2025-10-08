@@ -84,6 +84,8 @@ export default function Home() {
 
 ### Assistant Component (Main Chat Interface)
 
+**Updated with Thread Restoration (Story 3.4):**
+
 ```typescript
 // app/assistant.tsx
 "use client";
@@ -93,6 +95,8 @@ import {
   useChatRuntime,
   AssistantChatTransport,
 } from "@assistant-ui/react-ai-sdk";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Thread } from "@/components/assistant-ui/thread";
 import {
   SidebarInset,
@@ -109,13 +113,67 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { generateThreadId } from "@/lib/chat-storage";
 
 export const Assistant = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [initialMessages, setInitialMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Thread restoration on mount
+  useEffect(() => {
+    async function restoreOrCreateThread() {
+      // 1. Check URL for threadId
+      let tid = searchParams.get('threadId');
+
+      if (tid) {
+        // URL has threadId - save to localStorage and use it
+        localStorage.setItem('currentThreadId', tid);
+      } else {
+        // No URL threadId - check localStorage
+        tid = localStorage.getItem('currentThreadId');
+
+        if (tid) {
+          // Try to load thread from KV
+          const messages = await fetchThreadHistory(tid);
+          if (messages && messages.length > 0) {
+            // Thread exists - restore it
+            setInitialMessages(messages);
+          } else {
+            // Thread doesn't exist - create new
+            tid = generateThreadId();
+            localStorage.setItem('currentThreadId', tid);
+          }
+        } else {
+          // No localStorage - create new thread
+          tid = generateThreadId();
+          localStorage.setItem('currentThreadId', tid);
+        }
+
+        // Update URL without reload
+        router.replace(`/?threadId=${tid}`, { scroll: false });
+      }
+
+      setThreadId(tid);
+      setIsLoading(false);
+    }
+
+    restoreOrCreateThread();
+  }, []);
+
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: "/api/chat",
+      body: { threadId }, // Pass threadId to API
     }),
+    initialMessages, // Restore history
   });
+
+  if (isLoading) {
+    return <div>Loading conversation...</div>;
+  }
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
@@ -149,7 +207,28 @@ export const Assistant = () => {
     </AssistantRuntimeProvider>
   );
 };
+
+// Helper function
+async function fetchThreadHistory(threadId: string) {
+  try {
+    const res = await fetch(`/api/threads/${threadId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.messages;
+    }
+  } catch (err) {
+    console.error('Failed to load thread history:', err);
+  }
+  return [];
+}
 ```
+
+**Key Implementation Details:**
+- localStorage stores `currentThreadId` for session restoration
+- URL always reflects active threadId (`?threadId=xyz`)
+- History loaded from `/api/threads/[threadId]` on mount
+- Empty/missing threads trigger new thread generation
+- URL updates without page reload using `router.replace()`
 
 ### API Route (Chat Streaming)
 
@@ -184,6 +263,19 @@ Assistance UI Runtime handles all chat state internally via the `useChatRuntime`
 - Thread management
 - Composer text
 
+### Client-Side State Layers
+
+**1. Assistance UI Runtime (In-Memory)**
+- Current thread messages
+- Streaming status
+- Composer text
+- UI state (loading, error)
+
+**2. localStorage (Persistent Client-Side)**
+- `currentThreadId` - Active thread identifier for session restoration
+- Purpose: Restore active conversation on page reload (F5)
+- Lifespan: Until user clears browser data or starts "New Conversation"
+
 **Access chat state (read-only):**
 ```typescript
 import { useThread } from "@assistant-ui/react";
@@ -215,9 +307,27 @@ function Controls() {
 }
 ```
 
-**Auth session (React Context - future):**
+**Thread persistence (localStorage):**
 ```typescript
-// app/layout.tsx (future Story 1.2)
+// Save active thread on first message
+function saveActiveThread(threadId: string) {
+  localStorage.setItem('currentThreadId', threadId);
+}
+
+// Restore active thread on mount
+function getActiveThread(): string | null {
+  return localStorage.getItem('currentThreadId');
+}
+
+// Clear on "New Conversation"
+function clearActiveThread() {
+  localStorage.removeItem('currentThreadId');
+}
+```
+
+**Auth session (React Context):**
+```typescript
+// app/layout.tsx
 import { SessionProvider } from "next-auth/react";
 
 export default function RootLayout({ children }) {

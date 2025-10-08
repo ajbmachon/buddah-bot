@@ -79,28 +79,7 @@ Implement the core chat functionality with streaming responses from Hermes 4 via
 
 ---
 
-### Story 2.4: Implement Error Handling and Timeout Management
-
-**As a** user,
-**I want** to receive clear error messages when chat requests fail,
-**so that** I understand what went wrong and can retry if needed.
-
-**Acceptance Criteria:**
-1. Network errors to Nous API caught and return user-friendly messages
-2. Timeout at 290 seconds with message: "Response taking longer than expected. Please try again."
-3. Rate limit errors (429) return: "Service temporarily busy. Please wait a moment and try again."
-4. Invalid API key errors logged but return generic message to user
-5. Malformed upstream responses handled gracefully
-6. All errors logged to Vercel with:
-   - Error type and message
-   - Request ID
-   - User session ID (sanitized)
-   - Timestamp
-7. Client receives structured error responses that Assistance UI can display
-
----
-
-### Story 2.5: Verify End-to-End Chat Flow in Production
+### Story 2.4: Verify End-to-End Chat Flow in Production
 
 **As a** user,
 **I want** to have a working conversation with the spiritual panel,
@@ -113,10 +92,7 @@ Implement the core chat functionality with streaming responses from Hermes 4 via
 4. Performance targets met:
    - Time-to-first-token < 2s
    - Complete response < 300s
-5. Error states tested and working:
-   - Network failure recovery
-   - Timeout handling
-   - Invalid API key (in dev environment)
+5. Basic error handling verified (AI SDK handles errors automatically)
 6. Multiple consecutive messages in same conversation working correctly
 7. Production deployment successful with all environment variables configured
 

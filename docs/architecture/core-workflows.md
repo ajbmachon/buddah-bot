@@ -91,7 +91,7 @@ sequenceDiagram
 
 ---
 
-## Workflow 3: Chat Streaming (Happy Path)
+## Workflow 3: Chat Streaming with Persistence (Happy Path)
 
 ```mermaid
 sequenceDiagram
@@ -99,13 +99,15 @@ sequenceDiagram
     participant Browser
     participant Runtime as Assistance UI<br/>Runtime
     participant EdgeAPI as /api/chat<br/>(Edge Runtime)
+    participant Cloud as AssistantCloud
     participant Nous as Nous Portal API
 
     User->>Browser: Type message "What is suffering?"
     Browser->>Runtime: User submits message
     Runtime->>Runtime: Add message to local state
 
-    Runtime->>EdgeAPI: POST /api/chat<br/>{ messages: [...] }
+    Runtime->>EdgeAPI: POST /api/chat<br/>{ messages: [...], threadId }
+    Note over Runtime,EdgeAPI: threadId from URL<br/>or localStorage
     EdgeAPI->>EdgeAPI: Validate session (from cookie)
     EdgeAPI->>EdgeAPI: Validate input (Zod schema)
     EdgeAPI->>EdgeAPI: Get system prompt (panel mode)
@@ -125,6 +127,11 @@ sequenceDiagram
 
     Nous-->>EdgeAPI: SSE: data: {"choices":[{"delta":{},"finish_reason":"stop"}]}
     EdgeAPI-->>Runtime: SSE: data: {"choices":[{"delta":{},"finish_reason":"stop"}]}
+
+    EdgeAPI->>KV: Save user message + assistant response
+    Note over EdgeAPI,KV: Persistence happens<br/>AFTER streaming completes
+    KV-->>EdgeAPI: Messages saved
+
     Runtime->>Runtime: Mark message complete
     Runtime->>Browser: Display complete response
 
@@ -135,6 +142,7 @@ sequenceDiagram
 - **Time-to-first-token:** < 2 seconds
 - **Streaming start:** < 2 seconds (PRD requirement)
 - **Total completion:** < 25 seconds (Edge timeout)
+- **Persistence:** < 100ms (non-blocking, after stream)
 - **Request completion rate:** > 99% (PRD requirement)
 
 ---
@@ -179,7 +187,57 @@ sequenceDiagram
 
 ---
 
-## Workflow 5: Session Expiry Mid-Chat
+## Workflow 5: Thread Restoration on Page Reload
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant LocalStorage as Browser<br/>localStorage
+    participant App as /page.tsx
+    participant ThreadAPI as /api/threads/[id]
+    participant Cloud as AssistantCloud
+    participant Runtime as Assistance UI
+
+    User->>Browser: Press F5 (page reload)
+    Browser->>App: Load React app
+
+    App->>Browser: Check URL ?threadId=...
+    alt URL has threadId
+        Browser-->>App: threadId=abc123
+        App->>LocalStorage: Save currentThreadId = abc123
+    else No threadId in URL
+        App->>LocalStorage: Get currentThreadId
+        LocalStorage-->>App: abc123 (from previous session)
+        App->>ThreadAPI: GET /api/threads/abc123
+        ThreadAPI->>KV: Fetch messages for thread abc123
+        KV-->>ThreadAPI: [messages...]
+        alt Thread exists
+            ThreadAPI-->>App: { messages: [...] }
+            App->>App: Update URL with ?threadId=abc123
+        else Thread empty/missing
+            ThreadAPI-->>App: { messages: [] }
+            App->>App: Generate new threadId
+            App->>LocalStorage: Save new currentThreadId
+            App->>App: Update URL with new threadId
+        end
+    end
+
+    App->>Runtime: Initialize with threadId + messages
+    Runtime->>Browser: Render chat with full history
+    User->>Browser: Conversation restored!
+```
+
+**Restoration Behavior:**
+- **URL Priority:** URL threadId always wins over localStorage
+- **localStorage Fallback:** Assistance UI manages user ID in anonymous mode
+- **History Fetch:** Messages loaded from AssistantCloud automatically
+- **Graceful Degradation:** Creates new thread if restoration fails
+- **Performance:** < 500ms to restore conversation (PRD target)
+
+---
+
+## Workflow 6: Session Expiry Mid-Chat
 
 ```mermaid
 sequenceDiagram
@@ -199,12 +257,13 @@ sequenceDiagram
     User->>Browser: Sign in again
     Note over Browser,AuthAPI: Auth workflow (Google/Email)
     Browser->>Browser: Return to / (with new session)
-    Runtime->>Browser: Chat restored (no history - client-side only)
-    User->>User: Continue conversation (fresh thread)
+    Note over Browser: Thread restoration workflow<br/>(Workflow 5) runs
+    Runtime->>Browser: Chat history restored from KV
+    User->>User: Continue conversation (history preserved!)
 ```
 
 **Session Behavior:**
 - **Expiry:** 30 days of inactivity
-- **No Persistence:** Previous conversation lost (no DB)
-- **Client State:** Assistance UI maintains thread in memory (cleared on refresh)
-- **Graceful UX:** Clear message + redirect to login
+- **With Persistence:** Conversation history restored from AssistantCloud (Epic 3)
+- **localStorage:** Maintains anonymous user ID for AssistantCloud
+- **Graceful UX:** Clear message + redirect to login + history restoration

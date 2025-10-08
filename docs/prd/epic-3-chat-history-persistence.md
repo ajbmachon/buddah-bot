@@ -2,7 +2,7 @@
 
 ## Epic Goal
 
-Implement conversation history persistence using Vercel KV (Redis) so users can refresh the page or return later and see their previous messages, enabling continuity in spiritual guidance conversations across sessions.
+Implement conversation history persistence using **AssistantCloud** (Assistance UI's native persistence layer) so users can refresh the page or return later and see their previous messages, enabling continuity in spiritual guidance conversations across sessions.
 
 ## Epic Description
 
@@ -12,146 +12,79 @@ Implement conversation history persistence using Vercel KV (Redis) so users can 
 - Each conversation is ephemeral with no persistence
 
 **Enhancement Details:**
-- **What's being added:** Vercel KV database setup, chat storage utility library, message persistence after streaming, thread history loading on page mount, thread management API routes
-- **How it integrates:** Extends existing `/api/chat` route to save messages, adds new API routes for thread retrieval, updates frontend to load and display history
-- **Success criteria:** User sends messages, refreshes page, and sees complete conversation history restored
+- **What's being added:** AssistantCloud integration, automatic message persistence, thread management UI, conversation history sidebar
+- **How it integrates:** Adds `cloud` prop to existing `useChatRuntime` hook, integrates built-in `<ThreadList />` component, zero backend code required
+- **Success criteria:** User sends messages, refreshes page, and sees complete conversation history restored automatically
+
+**Why AssistantCloud:**
+- Official Assistance UI persistence solution (native integration)
+- Zero custom backend code needed
+- Built-in thread management and UI components
+- Anonymous mode perfect for MVP (no user account management)
+- 4 stories instead of 7 (80% less implementation work)
+- Can migrate to self-hosted later if needed
 
 ## Stories
 
-### Story 3.1: Set Up Vercel KV Database and Install Package
+### Story 3.1: Set Up AssistantCloud and Configure Authentication
 
 **As a** developer,
-**I want** to create a Vercel KV database and install the client package,
-**so that** I can store and retrieve chat messages with minimal latency.
+**I want** to set up AssistantCloud with anonymous authentication,
+**so that** users can have persistent chat history without requiring account creation.
 
 **Acceptance Criteria:**
-1. Vercel KV database created via Vercel Dashboard:
-   - Navigate to Project → Storage → Create Database → KV
-   - Name: `buddahbot-kv`
-   - Database created successfully
-2. Environment variables automatically added to Vercel project:
-   - `KV_URL`
-   - `KV_REST_API_URL`
-   - `KV_REST_API_TOKEN`
-   - `KV_REST_API_READ_ONLY_TOKEN`
-3. `@vercel/kv` package installed via npm/yarn/pnpm
-4. Local development `.env.local` configured with KV credentials (copy from Vercel)
-5. Connection test successful (can read/write to KV in development)
+1. AssistantCloud account created at https://cloud.assistant-ui.com
+2. Project created in AssistantCloud dashboard with name `buddahbot`
+3. Environment variables configured:
+   - `NEXT_PUBLIC_ASSISTANT_BASE_URL` - Frontend API URL from dashboard
+   - `ASSISTANT_API_KEY` - API key from dashboard (for future server-side operations)
+4. Anonymous mode enabled (browser session-based user IDs)
+5. Connection test successful (can create and retrieve threads)
+6. `.env.local.example` updated with new environment variables
+7. Environment variables deployed to Vercel production
 
 ---
 
-### Story 3.2: Create Chat Storage Utility Library
-
-**As a** developer,
-**I want** a utility library for chat storage operations,
-**so that** I have consistent, type-safe functions for managing messages and threads.
-
-**Acceptance Criteria:**
-1. `lib/chat-storage.ts` file created with TypeScript interfaces:
-   - `Message` interface (role, content, createdAt)
-   - `Thread` interface (id, userId, title, createdAt, updatedAt)
-2. Functions implemented:
-   - `saveMessage(userId, threadId, message)` - appends message to thread
-   - `getThreadMessages(userId, threadId)` - retrieves all messages
-   - `getUserThreads(userId)` - lists all threads for user
-   - `deleteThread(userId, threadId)` - removes thread and messages
-   - `updateThreadMetadata(userId, threadId, lastMessage)` - updates thread info
-   - `generateThreadTitle(message)` - creates title from first message
-   - `generateThreadId()` - creates unique thread identifier
-3. Redis key structure documented:
-   - `user:{userId}:threads` - Set of thread IDs
-   - `user:{userId}:thread:{threadId}:meta` - Thread metadata
-   - `user:{userId}:thread:{threadId}:messages` - List of messages
-4. TTL (Time To Live) set to 90 days for all keys
-5. All functions include error handling
-6. Code follows TypeScript best practices with proper types
-
----
-
-### Story 3.3: Update Chat API to Save Messages After Streaming
-
-**As a** system,
-**I want** to persist user and assistant messages after streaming completes,
-**so that** conversations are stored for future retrieval.
-
-**Acceptance Criteria:**
-1. `/api/chat/route.ts` updated to accept `threadId` in request body
-2. Request validation includes `threadId` check (400 error if missing)
-3. Streaming response modified to capture complete assistant message
-4. After stream completion, both messages saved:
-   - User message saved with `role: 'user'`
-   - Assistant message saved with `role: 'assistant'`
-   - Both include `createdAt` ISO timestamps
-5. Storage failures logged but don't fail the streaming response
-6. Thread metadata updated with latest message for title generation
-7. Edge runtime compatibility maintained (no Node.js-only APIs)
-
----
-
-### Story 3.4: Update Frontend to Load and Restore Thread History
+### Story 3.2: Integrate AssistantCloud with Existing Chat Runtime
 
 **As a** user,
-**I want** my conversation history to load when I return to a thread,
-**so that** I can continue where I left off without losing context.
+**I want** my chat messages to be saved automatically,
+**so that** I can refresh the page and see my conversation history.
 
 **Acceptance Criteria:**
-1. Frontend generates or retrieves `threadId` on page mount:
-   - Check URL query parameter `?threadId=...`
-   - If missing, generate new thread ID and update URL
-   - If present, use existing thread ID
-2. `threadId` passed to `useAssistant` hook in `body` parameter
-3. On mount, fetch thread history from `/api/threads/[threadId]`
-4. `initialMessages` populated with loaded history
-5. Assistance UI displays full conversation history
-6. New messages append to existing thread
-7. URL updates without page reload when thread ID changes
-8. Loading state displayed while fetching history
-9. Empty threads (new conversations) start with empty message list
+1. AssistantCloud instance created in `app/assistant.tsx` with anonymous mode
+2. `cloud` prop passed to `useChatRuntime` hook
+3. Messages automatically persist to AssistantCloud after streaming
+4. Page refresh loads previous conversation automatically
+5. No manual save/load code required (handled by Assistance UI)
+6. Thread ID managed automatically by AssistantCloud
+7. First message in conversation auto-generates thread title
+8. No errors in console related to cloud persistence
 
 ---
 
-### Story 3.5: Create Thread History API Route
-
-**As a** developer,
-**I want** an API route to retrieve thread messages,
-**so that** the frontend can load conversation history.
-
-**Acceptance Criteria:**
-1. `/api/threads/[threadId]/route.ts` created with Edge runtime
-2. GET handler implemented accepting `threadId` from URL parameters
-3. Session validation ensures user can only access their own threads
-4. Messages retrieved using `getThreadMessages(userId, threadId)`
-5. Response format: `{ messages: Message[] }`
-6. Empty threads return `{ messages: [] }` (not 404)
-7. Unauthorized requests return 401
-8. Errors handled and logged appropriately
-
----
-
-### Story 3.6: (Optional) Implement Thread List Page
+### Story 3.3: Add Thread List Sidebar for Conversation History
 
 **As a** user,
-**I want** to see a list of all my previous conversations,
+**I want** to see a list of my previous conversations,
 **so that** I can navigate back to earlier spiritual guidance sessions.
 
 **Acceptance Criteria:**
-1. `/threads/page.tsx` created with thread list UI
-2. Page fetches user threads from `/api/threads` endpoint
-3. Each thread displays:
-   - Thread title (truncated first message)
-   - Last updated timestamp (human-readable format)
-4. Threads sorted by most recent first
-5. Clicking a thread navigates to `/?threadId={id}`
-6. "New Conversation" button creates fresh thread
-7. Page protected by authentication middleware
-8. `/api/threads/route.ts` GET endpoint implemented:
-   - Retrieves threads using `getUserThreads(userId)`
-   - Returns `{ threads: Thread[] }`
-   - Session validated
+1. `<ThreadList />` component added to `app/assistant.tsx`
+2. Sidebar layout implemented using `<SidebarProvider>` and `<SidebarInset>`
+3. Thread list displays:
+   - Thread titles (auto-generated from first message)
+   - Last updated timestamp
+   - Active thread indicator
+4. Clicking a thread switches to that conversation
+5. "New Conversation" button creates fresh thread
+6. Thread list populated automatically from AssistantCloud
+7. Sidebar collapsible on mobile devices
+8. No custom thread management code required (built-in)
 
 ---
 
-### Story 3.7: Verify End-to-End Persistence in Production
+### Story 3.4: Verify End-to-End Persistence in Production
 
 **As a** user,
 **I want** confidence that my conversations are reliably saved and restored,
@@ -159,55 +92,151 @@ Implement conversation history persistence using Vercel KV (Redis) so users can 
 
 **Acceptance Criteria:**
 1. Full persistence flow tested in production:
-   - Send message → message saved to KV
-   - Refresh page → history restored
+   - Send message → message saved to AssistantCloud
+   - Refresh page (F5) → active conversation restored with full history
    - Send another message → appends to existing thread
    - Navigate away and return → full history intact
-2. Multiple threads per user working correctly
-3. Thread list page displays all conversations (if implemented)
-4. Performance verified:
+   - Close browser and reopen → last active conversation restored (if localStorage intact)
+2. Thread list functionality verified:
+   - Multiple threads per user working correctly
+   - Thread switching maintains history
+   - New thread creation works
+   - Thread titles auto-generated accurately
+3. Performance verified:
    - History load time < 500ms
    - Message save doesn't block streaming response
-5. TTL verified (keys expire after 90 days)
-6. Error scenarios tested:
-   - KV unavailable (graceful degradation - streaming still works)
-   - Missing threadId (appropriate error message)
-   - Unauthorized access attempt (403/401 response)
+   - Thread list loads quickly (< 300ms)
+4. Anonymous mode verified:
+   - Browser session creates unique user ID
+   - User ID stored in localStorage
+   - Different browsers = different user sessions (expected)
+   - Incognito mode creates separate session (expected)
+5. Error scenarios tested:
+   - AssistantCloud unavailable (graceful degradation - streaming still works)
+   - localStorage unavailable (fallback behavior documented)
+   - Network issues during save (retry behavior verified)
+6. Cross-browser testing:
+   - Chrome (desktop + mobile)
+   - Safari (desktop + mobile)
+   - Firefox (desktop)
 
 ---
 
 ## Compatibility Requirements
 
-- [ ] Vercel KV (Redis) compatibility
-- [ ] Edge runtime for all API routes
-- [ ] Vercel free tier limits (256MB storage, 10k commands/day)
-- [ ] `@vercel/kv` package compatibility
+- [ ] AssistantCloud free tier limits (check dashboard for current limits)
+- [ ] `@assistant-ui/react` v0.11.10+
+- [ ] `@assistant-ui/react-ai-sdk` latest version
+- [ ] Browser localStorage enabled (for anonymous user IDs)
+- [ ] Vercel hosting (unchanged - AssistantCloud is just storage layer)
 
 ## Risk Mitigation
 
-**Primary Risk:** KV storage unavailable causing message loss
+**Primary Risk:** AssistantCloud third-party dependency
 
 **Mitigation:**
-- Message saving happens AFTER streaming completes (streaming never blocked)
-- Storage failures logged but don't affect user experience
-- Display warning banner if persistence fails
-- Document KV free tier limits and monitoring approach
+- AssistantCloud is official Assistance UI solution (maintained by framework authors)
+- Free tier sufficient for MVP testing
+- Migration path documented (can self-host with Vercel KV later if needed)
+- Streaming still works if cloud unavailable (graceful degradation)
+
+**Secondary Risk:** Anonymous mode limitations (per-browser sessions)
+
+**Mitigation:**
+- Acceptable for MVP friends/family testing
+- Post-MVP: Add Auth.js integration for cross-device sync
+- Clear documentation of anonymous mode behavior
+- Easy upgrade path to authenticated mode
 
 **Rollback Plan:**
-- If KV issues persist, temporarily disable persistence (chat continues working)
-- Can migrate to Vercel Postgres if KV limitations encountered
-- Previous Epic 2 deployment remains functional (streaming works without persistence)
+- If AssistantCloud issues arise, can quickly implement Vercel KV fallback
+- All chat streaming continues working (persistence is additive feature)
+- Research agent found Vercel KV pattern as alternative (documented)
 
 ## Definition of Done
 
-- [ ] All stories completed with acceptance criteria met
-- [ ] Vercel KV database created and connected
+- [ ] All 4 stories completed with acceptance criteria met
+- [ ] AssistantCloud account set up and configured
 - [ ] Messages persist across page refreshes in production
-- [ ] Thread history loads correctly on mount
-- [ ] Thread list page implemented (if Story 3.6 completed)
-- [ ] Performance targets met (< 500ms history load)
+- [ ] Thread list displays conversation history
+- [ ] Thread switching works correctly
+- [ ] Performance targets met (< 500ms history load, < 300ms thread list)
 - [ ] Error handling tested for all failure modes
-- [ ] TTL verified (90-day expiration working)
 - [ ] At least 3 users tested multi-session conversations successfully
+- [ ] Anonymous mode limitations documented in README
 
 ---
+
+## Technical Decision Record
+
+**Decision:** Use AssistantCloud instead of Vercel KV
+
+**Context:**
+- Original plan: Custom Vercel KV implementation (7 stories, ~400 lines of code)
+- Discovery: AssistantCloud is Assistance UI's native persistence solution
+- Research: Validated both approaches are production-ready
+
+**Alternatives Considered:**
+
+1. **Vercel KV + Custom Storage** (Original Plan)
+   - ✅ Full control over data
+   - ✅ Production-standard pattern
+   - ❌ ~400 lines of custom code
+   - ❌ 7 stories (slower to MVP)
+   - ❌ No built-in ThreadList component
+
+2. **AssistantCloud** (Selected)
+   - ✅ Zero backend persistence code
+   - ✅ Built-in thread management UI
+   - ✅ 4 stories (faster to MVP)
+   - ✅ Official Assistance UI solution
+   - ❌ Third-party dependency
+   - ❌ Anonymous mode = per-browser sessions
+
+3. **Vercel Postgres** (Rejected)
+   - ✅ Relational data (better for complex queries)
+   - ❌ Overkill for MVP
+   - ❌ More complex schema
+   - ❌ Slower queries for simple message retrieval
+
+**Decision Rationale:**
+- **Speed to MVP:** AssistantCloud reduces Epic 3 from 7 stories to 4
+- **Code Reduction:** ~400 lines of custom code eliminated
+- **Native Integration:** Official Assistance UI solution (better framework support)
+- **MVP Scope:** Anonymous mode perfectly fits "friends/family" testing
+- **Migration Path:** Can switch to self-hosted Vercel KV post-MVP if needed
+
+**Trade-offs Accepted:**
+- Third-party dependency (acceptable for MVP)
+- Per-browser sessions vs cross-device (acceptable for testing phase)
+- Less data control (acceptable for simple chat storage)
+
+**Validation:**
+- Research agents confirmed both approaches are production-ready
+- AssistantCloud used by Assistance UI's own examples
+- Vercel AI SDK + Vercel KV pattern validated as standard alternative
+
+---
+
+## Post-MVP Migration Path (If Needed)
+
+**Scenario:** Want to self-host persistence or need cross-device sync
+
+**Steps:**
+1. Implement Vercel KV storage using validated patterns from research
+2. Create `/api/threads` routes for message persistence
+3. Update `useChatRuntime` to remove `cloud` prop
+4. Add `onFinish` callback to save messages server-side
+5. Migrate existing AssistantCloud data (export/import via API)
+
+**Estimated Effort:** 2-3 stories (implementation patterns already researched)
+
+**No Rush:** AssistantCloud scales well beyond MVP, migration only if business requires it
+
+---
+
+## References
+
+- [AssistantCloud Documentation](https://www.assistant-ui.com/docs/cloud/persistence/ai-sdk)
+- [Vercel AI SDK Persistence Guide](https://ai-sdk.dev/docs/ai-sdk-ui/chatbot-message-persistence)
+- Research Agent Reports (attached to Story 3.1)

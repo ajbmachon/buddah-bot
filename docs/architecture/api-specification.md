@@ -23,7 +23,8 @@ Cookie: authjs.session-token=<jwt>
 {
   "messages": [
     { "role": "user", "content": "What is the nature of suffering?" }
-  ]
+  ],
+  "threadId": "uuid-or-nanoid"
 }
 ```
 
@@ -31,6 +32,7 @@ Cookie: authjs.session-token=<jwt>
 - Max 20 messages per request
 - Each message max 2000 characters
 - Only `user` and `assistant` roles
+- `threadId` required for persistence (Story 3.3)
 
 ---
 
@@ -95,9 +97,42 @@ const payload = {
 
 **Key behaviors:**
 - System prompt never exposed to client
-- Full conversation context sent each request (stateless)
+- Full conversation context sent each request (stateless API)
 - Streaming piped directly (no buffering)
+- Messages saved to KV **after** streaming completes (Story 3.3)
 - Nous API errors mapped to standard format
+
+**Persistence flow:**
+```typescript
+// Handled automatically by AssistantCloud
+// No manual persistence code in /api/chat route
+// Messages save automatically after streaming via Assistance UI runtime
+```
+
+---
+
+## No Additional Endpoints Needed (Epic 3)
+
+**AssistantCloud Integration:**
+- Thread management handled client-side by Assistance UI
+- No custom `/api/threads` routes needed
+- No manual message save/load endpoints
+- Thread list populated via `<ThreadList />` component (queries AssistantCloud directly)
+
+**Architecture:**
+```
+Client → AssistantCloud API (direct)
+  ├── Thread creation
+  ├── Message persistence
+  ├── Thread retrieval
+  └── Thread list
+```
+
+**Benefits:**
+- Zero backend persistence code
+- No additional API routes to maintain
+- Built-in error handling and retry logic
+- Automatic message batching and optimization
 
 ---
 
@@ -105,4 +140,4 @@ const payload = {
 
 **This is an internal API** (not public). Formal OpenAPI specs are overkill for MVP.
 
-See PRD Section 8 for full implementation example.
+See PRD Epic 2 and Epic 3 for full implementation examples.
