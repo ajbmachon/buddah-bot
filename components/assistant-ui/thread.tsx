@@ -95,16 +95,17 @@ const ThreadWelcome: FC = () => {
             exit={{ opacity: 0, y: 10 }}
             className="aui-thread-welcome-message-motion-1 text-2xl font-semibold"
           >
-            Hello there!
+            Welcome
           </m.div>
           <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ delay: 0.1 }}
-            className="aui-thread-welcome-message-motion-2 text-2xl text-muted-foreground/65"
+            className="aui-thread-welcome-message-motion-2 text-lg text-muted-foreground/65"
           >
-            How can I help you today?
+            Share what's on your heart. You'll receive guidance from a panel of
+            wise teachers including Eckhart Tolle, Tara Brach and Gabor Maté.
           </m.div>
         </div>
       </div>
@@ -118,24 +119,27 @@ const ThreadSuggestions: FC = () => {
     <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-4 @md:grid-cols-2">
       {[
         {
-          title: "What's the weather",
-          label: "in San Francisco?",
-          action: "What's the weather in San Francisco?",
+          title: "My partner and I keep arguing",
+          label: "and I feel hurt and unseen, how can I cope?",
+          action:
+            "My partner and I keep arguing and I feel hurt and unseen, how can I cope?",
         },
         {
-          title: "Explain React hooks",
-          label: "like useState and useEffect",
-          action: "Explain React hooks like useState and useEffect",
+          title: "I suffer in my job but can't quit",
+          label: "my anxiety is high, how can I escape?",
+          action:
+            "I suffer in my job but can't quit, my anxiety is high, how can I escape?",
         },
         {
-          title: "Write a SQL query",
-          label: "to find top customers",
-          action: "Write a SQL query to find top customers",
+          title: "I feel stuck in my life",
+          label: "and don't know how to change",
+          action: "I feel stuck in my life and don't know how to change",
         },
         {
-          title: "Create a meal plan",
-          label: "for healthy weight loss",
-          action: "Create a meal plan for healthy weight loss",
+          title: "Everything feels overwhelming",
+          label: "too many things at once are going wrong",
+          action:
+            "Everything feels overwhelming too many things at once are going wrong",
         },
       ].map((suggestedAction, index) => (
         <m.div
