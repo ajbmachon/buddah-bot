@@ -2,7 +2,7 @@
 
 ## Overview
 
-BuddahBot uses **minimal persistence**:
+BuddhaBot uses **minimal persistence**:
 - **Session data:** JWT tokens (Auth.js, no database)
 - **Chat history:** AssistantCloud (Assistance UI's native persistence layer)
 - **User identification:** Auth.js session (email-based user ID for AssistantCloud)

@@ -1,8 +1,8 @@
-# PRD — BuddahBot: Spiritual Wisdom Chat App
+# PRD — BuddhaBot: Spiritual Wisdom Chat App
 
 ## Table of Contents
 
-- [PRD — BuddahBot: Spiritual Wisdom Chat App](#table-of-contents)
+- [PRD — BuddhaBot: Spiritual Wisdom Chat App](#table-of-contents)
   - [1) Product Summary](./1-product-summary.md)
   - [2) Success Criteria](./2-success-criteria.md)
   - [3) Three Conversation Modes](./3-three-conversation-modes.md)

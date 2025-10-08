@@ -2,7 +2,7 @@
 
 ## Technical Summary
 
-BuddahBot employs a **serverless Jamstack architecture** deployed on Vercel, optimizing for simplicity and zero DevOps overhead. The frontend is built with **Assistance UI framework on Next.js 14 (App Router)** with TypeScript, providing a complete chat interface out-of-the-box. The backend consists of two serverless functions: an **Edge runtime** `/api/chat` route for streaming responses with <2s latency, and a **Node runtime** Auth.js handler for authentication. Authentication uses **Auth.js (NextAuth)** with Google OAuth and email magic links, storing sessions as JWT tokens (no database required). The system proxies requests to the **Nous Portal API** (Hermes 4 405B/70B) with spiritual wisdom prompts injected server-side. This architecture achieves the PRD's goals of <2-click access, <2s streaming start, and 99%+ reliability through Vercel's global edge network and proven serverless patterns.
+BuddhaBot employs a **serverless Jamstack architecture** deployed on Vercel, optimizing for simplicity and zero DevOps overhead. The frontend is built with **Assistance UI framework on Next.js 14 (App Router)** with TypeScript, providing a complete chat interface out-of-the-box. The backend consists of two serverless functions: an **Edge runtime** `/api/chat` route for streaming responses with <2s latency, and a **Node runtime** Auth.js handler for authentication. Authentication uses **Auth.js (NextAuth)** with Google OAuth and email magic links, storing sessions as JWT tokens (no database required). The system proxies requests to the **Nous Portal API** (Hermes 4 405B/70B) with spiritual wisdom prompts injected server-side. This architecture achieves the PRD's goals of <2-click access, <2s streaming start, and 99%+ reliability through Vercel's global edge network and proven serverless patterns.
 
 ## Platform and Infrastructure Choice
 
@@ -49,7 +49,7 @@ BuddahBot employs a **serverless Jamstack architecture** deployed on Vercel, opt
 
 **Structure Pattern:**
 ```
-buddah-bot/
+buddha-bot/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API routes
 │   │   ├── chat/         # Edge runtime streaming

@@ -2,7 +2,7 @@
 
 ## Philosophy
 
-Follow your global clean code rules (`@rules/clean-code.md`) with these BuddahBot-specific requirements.
+Follow your global clean code rules (`@rules/clean-code.md`) with these BuddhaBot-specific requirements.
 
 **Remember:** Solo developer, 2-day MVP. Keep it simple.
 

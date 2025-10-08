@@ -1,6 +1,6 @@
-# BuddahBot Deployment Guide (October 2025)
+# BuddhaBot Deployment Guide (October 2025)
 
-Complete step-by-step guide to deploy BuddahBot to production using Vercel, with accurate UI navigation for current dashboards.
+Complete step-by-step guide to deploy BuddhaBot to production using Vercel, with accurate UI navigation for current dashboards.
 
 ---
 
@@ -25,11 +25,11 @@ Before starting deployment, ensure you have:
 2. Click **Select a project** dropdown (top-left, near Google Cloud logo)
 3. Click **NEW PROJECT** button
 4. Configure project:
-   - **Project name:** "BuddahBot"
+   - **Project name:** "BuddhaBot"
    - **Organization:** Leave as "No organization"
    - Click **CREATE** button
 5. Wait for project creation (notification appears top-right)
-6. Select newly created "BuddahBot" project from dropdown
+6. Select newly created "BuddhaBot" project from dropdown
 
 ### Step 1.2: Configure OAuth Consent Screen (REQUIRED FIRST)
 
@@ -40,7 +40,7 @@ Before starting deployment, ensure you have:
 
 | Field | Value | Required? |
 |-------|-------|-----------|
-| App name | BuddahBot | ✅ Yes |
+| App name | BuddhaBot | ✅ Yes |
 | User support email | your-email@gmail.com | ✅ Yes |
 | App logo | (Optional - upload 120x120px) | ❌ No |
 | Application home page | https://your-domain.vercel.app | ❌ No |
@@ -83,7 +83,7 @@ Before starting deployment, ensure you have:
 | Field | Value |
 |-------|-------|
 | Application type | **Web application** (dropdown) |
-| Name | BuddahBot Production |
+| Name | BuddhaBot Production |
 
 5. **Authorized JavaScript origins:** Click **+ ADD URI** button:
    - Add: `http://localhost:3000`
@@ -120,7 +120,7 @@ Before starting deployment, ensure you have:
 1. After login, navigate to **API Keys** in left sidebar
 2. Click **+ Create API Key** button
 3. Configure:
-   - **Name:** "BuddahBot Production"
+   - **Name:** "BuddhaBot Production"
    - **Permission:** Select **Sending access** radio button (recommended)
    - **Domain:** Select **resend.dev** (default testing domain)
 4. Click **Add** button
@@ -169,7 +169,7 @@ For MVP, you can use the default `onboarding@resend.dev` sender address (no doma
 4. **Import Git Repository** section:
    - Click **+ Add GitHub Account** (if first time)
    - Authorize Vercel to access repositories
-   - Find "buddah-bot" repository in list
+   - Find "buddha-bot" repository in list
    - Click **Import** button next to it
 
 5. **Configure Project** page:
@@ -216,7 +216,7 @@ Still on the **Configure Project** page, in the **Environment Variables** sectio
 4. Wait 2-5 minutes for build to complete
 5. **Success page** shows:
    - 🎉 Congratulations message
-   - Production URL (e.g., `https://buddah-bot-abc123.vercel.app`)
+   - Production URL (e.g., `https://buddha-bot-abc123.vercel.app`)
    - **Copy** production URL
 
 ### Step 3.5: Update NEXTAUTH_URL
@@ -265,7 +265,7 @@ Still on the **Configure Project** page, in the **Environment Variables** sectio
 3. Click **"Sign in with Google"** button
 4. **Google consent screen appears:**
    - May show "Google hasn't verified this app" warning (expected in Testing mode)
-   - Click **Advanced** → **Go to BuddahBot (unsafe)** (safe for your own app)
+   - Click **Advanced** → **Go to BuddhaBot (unsafe)** (safe for your own app)
    - Select Google account
    - Click **Continue** through consent screens
 5. **Success:** Redirected back to production site
@@ -285,7 +285,7 @@ Still on the **Configure Project** page, in the **Environment Variables** sectio
 5. Check your email inbox
 6. **Magic link email** should arrive within 60 seconds
    - From: `onboarding@resend.dev` (or your custom domain)
-   - Subject: Similar to "Sign in to BuddahBot"
+   - Subject: Similar to "Sign in to BuddhaBot"
 7. Click magic link in email
 8. **Success:** Redirected to production site with active session
 9. Verify chat interface loads
@@ -343,7 +343,7 @@ Still on the **Configure Project** page, in the **Environment Variables** sectio
 
 **Fix (Users can proceed):**
 1. Click **Advanced** link on warning screen
-2. Click **Go to BuddahBot (unsafe)** link
+2. Click **Go to BuddhaBot (unsafe)** link
 3. Continue normal sign-in flow
 
 **Alternative (Remove warning - requires verification):**

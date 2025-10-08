@@ -14,7 +14,7 @@
 
 **M2: Chat History Persistence (Day 2)**
 - **[MANUAL STEP]** Create AssistantCloud account at https://cloud.assistant-ui.com
-  - Sign up and create project named `buddahbot`
+  - Sign up and create project named `buddhabot`
   - Get Frontend API URL and API key from dashboard
   - Add to Vercel env vars: `NEXT_PUBLIC_ASSISTANT_BASE_URL` and `ASSISTANT_API_KEY`
 - Add `cloud` prop to `useChatRuntime` in `app/assistant.tsx` (5 lines of code)

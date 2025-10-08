@@ -11,7 +11,7 @@ sequenceDiagram
     participant Google as Google OAuth
     participant EdgeAPI as /api/chat<br/>(Edge Runtime)
 
-    User->>Browser: Visit buddahbot.com
+    User->>Browser: Visit buddhabot.com
     Browser->>App: GET /
     App-->>Browser: Redirect to /login (no session)
 

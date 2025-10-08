@@ -130,7 +130,7 @@ Authorization: Bearer ${AUTH_RESEND_KEY}
 {
   "from": "noreply@yourdomain.com",
   "to": "user@example.com",
-  "subject": "Sign in to BuddahBot",
+  "subject": "Sign in to BuddhaBot",
   "html": "<p>Click <a href='https://yourdomain.com/api/auth/callback/email?token=xxx'>here</a> to sign in.</p>"
 }
 ```
@@ -179,5 +179,5 @@ AUTH_RESEND_KEY=re_...
 
 # Auth.js
 AUTH_SECRET=<openssl rand -base64 32>
-AUTH_URL=https://buddahbot.yourdomain.com
+AUTH_URL=https://buddhabot.yourdomain.com
 ```

@@ -1,4 +1,4 @@
-# BuddahBot 🧘
+# BuddhaBot 🧘
 
 A lightweight spiritual wisdom chat application powered by Hermes 4 AI, featuring a panel of spiritual teachers (Eckhart Tolle, Tara Brach, Alan Watts, and others).
 
@@ -18,8 +18,8 @@ A lightweight spiritual wisdom chat application powered by Hermes 4 AI, featurin
 
 1. **Clone repository:**
    ```bash
-   git clone https://github.com/yourusername/buddah-bot.git
-   cd buddah-bot
+   git clone https://github.com/yourusername/buddha-bot.git
+   cd buddha-bot
    ```
 
 2. **Install dependencies:**
@@ -78,7 +78,7 @@ AUTH_GOOGLE_SECRET=your_client_secret
 
 1. Sign up at [resend.com](https://resend.com)
 2. Navigate to **API Keys** → **Create API Key**
-   - Name: "BuddahBot Development"
+   - Name: "BuddhaBot Development"
    - Permission: **Sending access**
 3. Copy API key to `.env.local`
 
@@ -106,7 +106,7 @@ AssistantCloud provides zero-config chat history persistence using Assistance UI
 
 1. Go to [cloud.assistant-ui.com](https://cloud.assistant-ui.com)
 2. Sign up for free account
-3. Create new project named `buddahbot`
+3. Create new project named `buddhabot`
 4. Copy **Frontend API URL** from dashboard (format: `https://api.assistant-ui.com/v1/<project-id>`)
 5. Generate and copy **API Key** from dashboard
 
@@ -221,7 +221,7 @@ See [`.env.local.example`](.env.local.example) for full template with all variab
 ## Project Structure
 
 ```
-buddah-bot/
+buddha-bot/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Authentication pages
 │   │   └── login/
@@ -344,7 +344,9 @@ This is a personal project for friends and family. Not currently accepting exter
 
 ## License
 
-Private project - not licensed for public use.
+MIT License - See [LICENSE](LICENSE) file for details.
+
+Feel free to use, modify, and build upon this code for your own projects!
 
 ---
 

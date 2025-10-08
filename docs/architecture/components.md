@@ -2,7 +2,7 @@
 
 ## System Component Breakdown
 
-BuddahBot architecture consists of 5 core components split across frontend and backend.
+BuddhaBot architecture consists of 5 core components split across frontend and backend.
 
 ---
 
@@ -204,7 +204,7 @@ export function getSystemPrompt(mode: ModeType = 'panel'): string {
 **Critical Notes:**
 - **DO NOT MODIFY** panel prompt text (PRD requirement)
 - Use exact text from PRD Section 3
-- Mode selection via `process.env.BUDDAHBOT_MODE` (default: "panel")
+- Mode selection via `process.env.BUDDHABOT_MODE` (default: "panel")
 
 ---
 
@@ -234,7 +234,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="max-w-md w-full space-y-8">
-        <h1 className="text-3xl font-bold text-center">BuddahBot</h1>
+        <h1 className="text-3xl font-bold text-center">BuddhaBot</h1>
         <p className="text-center text-gray-600">
           Sign in to access spiritual wisdom guidance
         </p>

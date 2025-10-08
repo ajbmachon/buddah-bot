@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     });
 
     // Get system prompt for panel mode
-    const mode = (process.env.BUDDAHBOT_MODE || 'panel') as 'panel';
+    const mode = (process.env.BUDDHABOT_MODE || 'panel') as 'panel';
     const systemPrompt = getSystemPrompt(mode);
     const model = process.env.HERMES_MODEL || 'Hermes-4-405B';
 

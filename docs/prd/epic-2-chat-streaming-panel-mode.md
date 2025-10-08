@@ -45,7 +45,7 @@ Implement the core chat functionality with streaming responses from Hermes 4 via
    - `NOUS_API_BASE_URL` (default: Nous Portal endpoint)
    - `NOUS_API_KEY` (API bearer token)
    - `HERMES_MODEL` (default: `Hermes-4-405B`)
-   - `BUDDAHBOT_MODE` (default: `panel`)
+   - `BUDDHABOT_MODE` (default: `panel`)
 2. System prompt loaded **exactly as specified** in Section 3 of PRD (no modifications)
 3. Request payload correctly formatted for OpenAI-compatible endpoint:
    - `model`: from `HERMES_MODEL` env var

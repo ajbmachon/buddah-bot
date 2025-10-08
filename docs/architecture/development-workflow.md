@@ -20,7 +20,7 @@ git --version
 ```bash
 # 1. Clone repository (if not already done)
 git clone <repository-url>
-cd buddah-bot
+cd buddha-bot
 
 # 2. Install dependencies
 npm install
@@ -96,7 +96,7 @@ NOUS_API_BASE_URL=https://api.nousresearch.com/v1
 HERMES_MODEL=Hermes-4-405B
 
 # Mode Selection
-BUDDAHBOT_MODE=panel
+BUDDHABOT_MODE=panel
 
 # Auth - Google OAuth
 AUTH_GOOGLE_ID=your-client-id.apps.googleusercontent.com
@@ -117,13 +117,13 @@ NODE_ENV=development
 **Production (Vercel Environment Variables):**
 ```bash
 # Same as above, but:
-AUTH_URL=https://buddahbot.yourdomain.com
+AUTH_URL=https://buddhabot.yourdomain.com
 NODE_ENV=production
 
 # Vercel automatically provides:
 # VERCEL=1
 # VERCEL_ENV=production
-# VERCEL_URL=buddahbot.vercel.app
+# VERCEL_URL=buddhabot.vercel.app
 ```
 
 ---

@@ -34,7 +34,7 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 
 **Acceptance Criteria:**
 1. AssistantCloud account created at https://cloud.assistant-ui.com
-2. Project created in AssistantCloud dashboard with name `buddahbot`
+2. Project created in AssistantCloud dashboard with name `buddhabot`
 3. Environment variables configured:
    - `NEXT_PUBLIC_ASSISTANT_BASE_URL` - Frontend API URL from dashboard
    - `ASSISTANT_API_KEY` - API key from dashboard (for server-side operations)

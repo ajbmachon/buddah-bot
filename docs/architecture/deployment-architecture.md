@@ -27,7 +27,7 @@
 
 **3. (Optional) Custom Domain:**
 - Vercel Dashboard → Settings → Domains
-- Add `buddahbot.yourdomain.com`
+- Add `buddhabot.yourdomain.com`
 - Follow DNS instructions (add A/CNAME)
 - SSL certificate auto-provisioned
 
@@ -44,7 +44,7 @@ npm install && npm run build
 ↓
 Deploy to production
 ↓
-Live at buddahbot.vercel.app
+Live at buddhabot.vercel.app
 ```
 
 **That's it.** No configuration files, no CI/CD pipelines, no deployment scripts.
@@ -56,8 +56,8 @@ Live at buddahbot.vercel.app
 | Environment | URL Pattern | Purpose | Branch |
 |-------------|------------|---------|--------|
 | **Development** | http://localhost:3000 | Local dev | N/A |
-| **Preview** | https://buddahbot-git-[branch].vercel.app | Feature testing | Any non-main |
-| **Production** | https://buddahbot.vercel.app | Live users | main |
+| **Preview** | https://buddhabot-git-[branch].vercel.app | Feature testing | Any non-main |
+| **Production** | https://buddhabot.vercel.app | Live users | main |
 
 ---
 

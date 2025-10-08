@@ -4,7 +4,7 @@
 
 **Philosophy: Simple and Sufficient**
 
-BuddahBot is a personal project for a trusted circle of friends and family. Security is important, but over-engineering it would violate the project's core principle of simplicity. We rely on proven platform defaults and avoid custom security implementations.
+BuddhaBot is a personal project for a trusted circle of friends and family. Security is important, but over-engineering it would violate the project's core principle of simplicity. We rely on proven platform defaults and avoid custom security implementations.
 
 **What We Actually Need:**
 - Secure authentication (handled by Auth.js)
