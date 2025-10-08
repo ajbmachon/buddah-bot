@@ -36,7 +36,10 @@ These people are in the panel:
  * @param mode - The conversation mode (currently only 'panel' is implemented)
  * @returns The exact system prompt for the mode
  */
-export function getSystemPrompt(mode: 'panel' | 'custom' | 'general' = 'panel'): string {
+export function getSystemPrompt(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mode: 'panel' | 'custom' | 'general' = 'panel'
+): string {
   // Only panel mode is implemented in MVP
   return SYSTEM_PROMPTS.panel;
 }

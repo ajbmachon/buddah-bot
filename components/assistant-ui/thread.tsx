@@ -104,7 +104,7 @@ const ThreadWelcome: FC = () => {
             transition={{ delay: 0.1 }}
             className="aui-thread-welcome-message-motion-2 text-lg text-muted-foreground/65"
           >
-            Share what's on your heart. You'll receive guidance from a panel of
+            Share what&apos;s on your heart. You&apos;ll receive guidance from a panel of
             wise teachers including Eckhart Tolle, Tara Brach and Gabor Maté.
           </m.div>
         </div>

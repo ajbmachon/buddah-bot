@@ -13,12 +13,6 @@ function validateAuthEnv() {
     return;
   }
 
-  const required = [
-    "AUTH_GOOGLE_ID",
-    "AUTH_GOOGLE_SECRET",
-    "AUTH_SECRET", // Check for v5 name first
-  ];
-
   // Fallback to v4 variable names if v5 not found
   const hasV5Secret = !!process.env.AUTH_SECRET;
   const hasV4Secret = !!process.env.NEXTAUTH_SECRET;
