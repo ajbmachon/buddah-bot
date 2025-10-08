@@ -38,6 +38,9 @@ function validateAuthEnv() {
 validateAuthEnv();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Fix for Edge runtime "self is not defined" error in Auth.js v5 beta
+  trustHost: true,
+
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
