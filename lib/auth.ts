@@ -16,13 +16,26 @@ function validateAuthEnv() {
   const required = [
     "AUTH_GOOGLE_ID",
     "AUTH_GOOGLE_SECRET",
-    "AUTH_SECRET", // Auth.js v5 uses AUTH_SECRET (not NEXTAUTH_SECRET)
+    "AUTH_SECRET", // Check for v5 name first
   ];
 
-  // Auth.js v5 auto-detects URL in production via trustHost: true
-  // NEXTAUTH_URL is optional but recommended for explicit control
+  // Fallback to v4 variable names if v5 not found
+  const hasV5Secret = !!process.env.AUTH_SECRET;
+  const hasV4Secret = !!process.env.NEXTAUTH_SECRET;
 
-  const missing = required.filter((key) => !process.env[key]);
+  if (!hasV5Secret && !hasV4Secret) {
+    throw new Error(
+      `Missing required auth environment variable: AUTH_SECRET or NEXTAUTH_SECRET\n` +
+        `Please set either AUTH_SECRET (v5 preferred) or NEXTAUTH_SECRET (v4 compatible).`
+    );
+  }
+
+  // Auth.js v5 auto-detects URL in production via trustHost: true
+  // NEXTAUTH_URL is optional when trustHost: true is set
+
+  // Check for Google OAuth vars only (secret handled above)
+  const googleVars = ["AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"];
+  const missing = googleVars.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
