@@ -12,7 +12,7 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 | **Backend Framework** | Next.js API Routes | 15.5.4 | Serverless API endpoints | Edge runtime for streaming, Node runtime for auth, unified with frontend |
 | **API Style** | REST (OpenAI-compatible) | N/A | Streaming chat completions | Nous API is OpenAI-compatible REST, simple proxy pattern, no GraphQL overhead needed |
 | **Database** | None | N/A | No database required | JWT sessions (no user DB), AssistantCloud handles chat persistence |
-| **Chat Persistence** | AssistantCloud | Latest | Thread & message storage | Official Assistance UI persistence layer, zero backend code, anonymous mode for MVP |
+| **Chat Persistence** | AssistantCloud | Latest | Thread & message storage | Official Assistance UI persistence layer, integrated with Auth.js for authenticated users |
 | **File Storage** | None (MVP) | N/A | No file uploads | Assistance UI supports file sharing but MVP doesn't require it |
 | **Authentication** | Auth.js (NextAuth) | 5.0.0-beta | OAuth + Email authentication | Google OAuth + magic links, JWT sessions, Vercel-optimized - **Note: v5 is beta but production-ready** |
 | **Frontend Testing** | Vitest + React Testing Library | 3.2.4 + 16.3.0 | Component and unit tests | Vitest latest stable (Jun 2025), RTL with React 19 support (Apr 2025) |

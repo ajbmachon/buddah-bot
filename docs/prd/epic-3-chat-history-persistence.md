@@ -20,7 +20,7 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 - Official Assistance UI persistence solution (native integration)
 - Zero custom backend code needed
 - Built-in thread management and UI components
-- Anonymous mode perfect for MVP (no user account management)
+- Integrates with existing Auth.js authentication (friends/family login)
 - 4 stories instead of 7 (80% less implementation work)
 - Can migrate to self-hosted later if needed
 
@@ -29,16 +29,16 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 ### Story 3.1: Set Up AssistantCloud and Configure Authentication
 
 **As a** developer,
-**I want** to set up AssistantCloud with anonymous authentication,
-**so that** users can have persistent chat history without requiring account creation.
+**I want** to set up AssistantCloud with Auth.js integration,
+**so that** authenticated users can have persistent chat history tied to their Google account.
 
 **Acceptance Criteria:**
 1. AssistantCloud account created at https://cloud.assistant-ui.com
 2. Project created in AssistantCloud dashboard with name `buddahbot`
 3. Environment variables configured:
    - `NEXT_PUBLIC_ASSISTANT_BASE_URL` - Frontend API URL from dashboard
-   - `ASSISTANT_API_KEY` - API key from dashboard (for future server-side operations)
-4. Anonymous mode enabled (browser session-based user IDs)
+   - `ASSISTANT_API_KEY` - API key from dashboard (for server-side operations)
+4. Auth.js integration configured (user ID from session, not anonymous)
 5. Connection test successful (can create and retrieve threads)
 6. `.env.local.example` updated with new environment variables
 7. Environment variables deployed to Vercel production
@@ -52,8 +52,8 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 **so that** I can refresh the page and see my conversation history.
 
 **Acceptance Criteria:**
-1. AssistantCloud instance created in `app/assistant.tsx` with anonymous mode
-2. `cloud` prop passed to `useChatRuntime` hook
+1. AssistantCloud instance created in `app/assistant.tsx` with Auth.js session integration
+2. `cloud` prop passed to `useChatRuntime` hook with `authToken` from session
 3. Messages automatically persist to AssistantCloud after streaming
 4. Page refresh loads previous conversation automatically
 5. No manual save/load code required (handled by Assistance UI)
@@ -106,11 +106,11 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
    - History load time < 500ms
    - Message save doesn't block streaming response
    - Thread list loads quickly (< 300ms)
-4. Anonymous mode verified:
-   - Browser session creates unique user ID
-   - User ID stored in localStorage
-   - Different browsers = different user sessions (expected)
-   - Incognito mode creates separate session (expected)
+4. Authenticated mode verified:
+   - User ID derived from Auth.js session (Google OAuth)
+   - Conversations tied to Google account (cross-device sync works)
+   - Different browsers with same Google login = same conversations
+   - Sign out and sign in = conversations restored
 5. Error scenarios tested:
    - AssistantCloud unavailable (graceful degradation - streaming still works)
    - localStorage unavailable (fallback behavior documented)
@@ -127,7 +127,7 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 - [ ] AssistantCloud free tier limits (check dashboard for current limits)
 - [ ] `@assistant-ui/react` v0.11.10+
 - [ ] `@assistant-ui/react-ai-sdk` latest version
-- [ ] Browser localStorage enabled (for anonymous user IDs)
+- [ ] Auth.js session active (user must be signed in)
 - [ ] Vercel hosting (unchanged - AssistantCloud is just storage layer)
 
 ## Risk Mitigation
@@ -140,13 +140,13 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 - Migration path documented (can self-host with Vercel KV later if needed)
 - Streaming still works if cloud unavailable (graceful degradation)
 
-**Secondary Risk:** Anonymous mode limitations (per-browser sessions)
+**Secondary Risk:** Auth.js session expiry or token issues
 
 **Mitigation:**
-- Acceptable for MVP friends/family testing
-- Post-MVP: Add Auth.js integration for cross-device sync
-- Clear documentation of anonymous mode behavior
-- Easy upgrade path to authenticated mode
+- AssistantCloud uses Auth.js session user ID (already working in Epic 1)
+- Session refresh handled by Auth.js automatically
+- Clear error messages if session invalid
+- Graceful fallback to login if session expired
 
 **Rollback Plan:**
 - If AssistantCloud issues arise, can quickly implement Vercel KV fallback
@@ -190,8 +190,8 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
    - ✅ Built-in thread management UI
    - ✅ 4 stories (faster to MVP)
    - ✅ Official Assistance UI solution
+   - ✅ Auth.js integration = cross-device sync
    - ❌ Third-party dependency
-   - ❌ Anonymous mode = per-browser sessions
 
 3. **Vercel Postgres** (Rejected)
    - ✅ Relational data (better for complex queries)
@@ -203,13 +203,14 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 - **Speed to MVP:** AssistantCloud reduces Epic 3 from 7 stories to 4
 - **Code Reduction:** ~400 lines of custom code eliminated
 - **Native Integration:** Official Assistance UI solution (better framework support)
-- **MVP Scope:** Anonymous mode perfectly fits "friends/family" testing
+- **Auth Integration:** Uses existing Auth.js session (friends/family already logging in)
+- **Cross-Device Sync:** Conversations follow Google account across devices
 - **Migration Path:** Can switch to self-hosted Vercel KV post-MVP if needed
 
 **Trade-offs Accepted:**
 - Third-party dependency (acceptable for MVP)
-- Per-browser sessions vs cross-device (acceptable for testing phase)
 - Less data control (acceptable for simple chat storage)
+- Requires active session (already required by app architecture)
 
 **Validation:**
 - Research agents confirmed both approaches are production-ready

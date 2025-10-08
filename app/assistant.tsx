@@ -1,6 +1,6 @@
 "use client";
 
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
+import { AssistantRuntimeProvider, AssistantCloud } from "@assistant-ui/react";
 import {
   useChatRuntime,
   AssistantChatTransport,
@@ -18,10 +18,20 @@ import { Button } from "@/components/ui/button";
 
 export const Assistant = () => {
   const { data: session, status } = useSession();
+
+  // AssistantCloud with authenticated mode for permanent cross-device persistence
+  const cloud = new AssistantCloud({
+    baseUrl: process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL!,
+    authToken: () =>
+      fetch("/api/assistant-ui-token", { method: "POST" })
+        .then((r) => r.text()),
+  });
+
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: "/api/chat",
     }),
+    cloud,
   });
 
   // Loading state while session is being fetched

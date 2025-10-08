@@ -111,11 +111,113 @@ const payload = {
 
 ---
 
-## No Additional Endpoints Needed (Epic 3)
+## Endpoint 2: `GET /api/assistant-ui-token`
+
+**Purpose:** Fetch AssistantCloud workspace token for authenticated user
+
+**Runtime:** Vercel Node (serverless function)
+
+**Authentication:** Required (session cookie)
+
+---
+
+## Request
+
+**Headers:**
+```
+Cookie: authjs.session-token=<jwt>
+```
+
+**Body:** None (GET request)
+
+---
+
+## Response
+
+**Success (200 OK):**
+```json
+{
+  "token": "aui_workspace_abc123..."
+}
+```
+
+**Error (401 Unauthorized):**
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Error (500 Internal Server Error):**
+```json
+{
+  "error": "Failed to fetch workspace token"
+}
+```
+
+---
+
+## Implementation Notes
+
+**Server-side token fetch:**
+```typescript
+import { auth } from '@/auth';
+
+export const runtime = 'nodejs'; // Required for Auth.js
+
+export async function GET() {
+  // 1. Validate Auth.js session
+  const session = await auth();
+  if (!session?.user?.email) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // 2. Fetch AssistantCloud workspace token
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL}/workspaces`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.ASSISTANT_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.email, // Stable user identifier
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('AssistantCloud API error');
+    }
+
+    const { token } = await response.json();
+    return Response.json({ token });
+  } catch (error) {
+    console.error('Failed to fetch workspace token:', error);
+    return Response.json(
+      { error: 'Failed to fetch workspace token' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Key behaviors:**
+- Uses `session.user.email` as stable user ID (never changes for Google account)
+- `ASSISTANT_API_KEY` required (server-side only, not exposed to client)
+- Token cached by AssistantCloud (subsequent calls fast)
+- Client calls this endpoint on AssistantCloud initialization
+
+---
+
+## No Thread Management Endpoints Needed (Epic 3)
 
 **AssistantCloud Integration:**
 - Thread management handled client-side by Assistance UI
-- No custom `/api/threads` routes needed
+- `/api/assistant-ui-token` provides authentication token
+- No custom `/api/threads` persistence routes needed
 - No manual message save/load endpoints
 - Thread list populated via `<ThreadList />` component (queries AssistantCloud directly)
 

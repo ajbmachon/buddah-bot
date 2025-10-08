@@ -99,15 +99,23 @@ sequenceDiagram
     participant Browser
     participant Runtime as Assistance UI<br/>Runtime
     participant EdgeAPI as /api/chat<br/>(Edge Runtime)
-    participant Cloud as AssistantCloud
+    participant Cloud as AssistantCloud<br/>(Authenticated)
     participant Nous as Nous Portal API
 
     User->>Browser: Type message "What is suffering?"
     Browser->>Runtime: User submits message
     Runtime->>Runtime: Add message to local state
 
+    Runtime->>Browser: Fetch AssistantCloud token
+    Browser->>EdgeAPI: GET /api/assistant-ui-token (with session cookie)
+    EdgeAPI->>EdgeAPI: Validate Auth.js session
+    EdgeAPI->>Cloud: POST /workspaces (with ASSISTANT_API_KEY)
+    Cloud-->>EdgeAPI: { token: "aui_workspace_..." }
+    EdgeAPI-->>Runtime: { token }
+    Runtime->>Runtime: Initialize AssistantCloud with token
+
     Runtime->>EdgeAPI: POST /api/chat<br/>{ messages: [...], threadId }
-    Note over Runtime,EdgeAPI: threadId from URL<br/>or localStorage
+    Note over Runtime,EdgeAPI: threadId from AssistantCloud<br/>(tied to user's email)
     EdgeAPI->>EdgeAPI: Validate session (from cookie)
     EdgeAPI->>EdgeAPI: Validate input (Zod schema)
     EdgeAPI->>EdgeAPI: Get system prompt (panel mode)
@@ -128,9 +136,9 @@ sequenceDiagram
     Nous-->>EdgeAPI: SSE: data: {"choices":[{"delta":{},"finish_reason":"stop"}]}
     EdgeAPI-->>Runtime: SSE: data: {"choices":[{"delta":{},"finish_reason":"stop"}]}
 
-    EdgeAPI->>KV: Save user message + assistant response
-    Note over EdgeAPI,KV: Persistence happens<br/>AFTER streaming completes
-    KV-->>EdgeAPI: Messages saved
+    EdgeAPI->>Cloud: Save user message + assistant response
+    Note over EdgeAPI,Cloud: Persistence happens<br/>AFTER streaming completes
+    Cloud-->>EdgeAPI: Messages saved
 
     Runtime->>Runtime: Mark message complete
     Runtime->>Browser: Display complete response
@@ -230,7 +238,7 @@ sequenceDiagram
 
 **Restoration Behavior:**
 - **URL Priority:** URL threadId always wins over localStorage
-- **localStorage Fallback:** Assistance UI manages user ID in anonymous mode
+- **Session-based:** User ID from Auth.js session (email)
 - **History Fetch:** Messages loaded from AssistantCloud automatically
 - **Graceful Degradation:** Creates new thread if restoration fails
 - **Performance:** < 500ms to restore conversation (PRD target)
@@ -265,5 +273,5 @@ sequenceDiagram
 **Session Behavior:**
 - **Expiry:** 30 days of inactivity
 - **With Persistence:** Conversation history restored from AssistantCloud (Epic 3)
-- **localStorage:** Maintains anonymous user ID for AssistantCloud
+- **Session-based:** AssistantCloud user ID from Auth.js session email
 - **Graceful UX:** Clear message + redirect to login + history restoration
