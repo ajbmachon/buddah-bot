@@ -58,7 +58,7 @@ export const Assistant = () => {
               <SidebarTrigger />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <div className="flex flex-1 items-center justify-between">
-                <h1 className="text-lg font-semibold">BuddahBot</h1>
+                <h1 className="text-lg font-semibold">BuddhaBot</h1>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground">
                     {session.user?.name || session.user?.email}

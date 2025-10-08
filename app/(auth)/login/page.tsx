@@ -52,7 +52,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            BuddahBot
+            BuddhaBot
           </h1>
           <p className="mt-2 text-sm text-slate-600">
             Spiritual wisdom through AI guidance
