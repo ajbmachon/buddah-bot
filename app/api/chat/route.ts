@@ -1,6 +1,7 @@
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { auth } from "@/lib/auth";
+import { getSystemPrompt } from "@/lib/prompts";
 
 // Edge runtime for low latency streaming (per coding-standards.md)
 export const runtime = "edge";
@@ -88,11 +89,32 @@ export async function POST(req: Request) {
       `[${requestId}] Processing ${messages.length} message(s)`
     );
 
-    // Stream chat completion (placeholder model for Story 2.1)
+    // Create custom Nous provider (OpenAI-compatible)
+    const nous = createOpenAI({
+      baseURL: process.env.NOUS_API_BASE_URL || 'https://inference-api.nousresearch.com/v1',
+      apiKey: process.env.NOUS_API_KEY,
+    });
+
+    // Get system prompt for panel mode
+    const mode = (process.env.BUDDAHBOT_MODE || 'panel') as 'panel';
+    const systemPrompt = getSystemPrompt(mode);
+    const model = process.env.HERMES_MODEL || 'Hermes-4-405B';
+
+    console.log(`[${requestId}] Nous AI SDK configured`, {
+      provider: 'Nous Research',
+      model,
+      systemPromptMode: mode,
+      systemPromptLength: systemPrompt.length,
+    });
+
+    // Stream chat completion with Nous Hermes 4
+    // IMPORTANT: Use .chat() to force /chat/completions endpoint (not /responses)
     // convertToModelMessages transforms UIMessage (with parts) to ModelMessage (with content)
     const result = streamText({
-      model: openai("gpt-4o-mini"),
+      model: nous.chat(model),
+      system: systemPrompt,
       messages: convertToModelMessages(messages),
+      temperature: 0.7,
     });
 
     console.log(`[${requestId}] Streaming response initiated`);
@@ -100,17 +122,46 @@ export async function POST(req: Request) {
     // Return UIMessage stream format (required by AssistantChatTransport)
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error(`[${requestId}] Internal error:`, error);
+    console.error(`[${requestId}] Error occurred:`, error);
+
+    // Map AI SDK errors to user-friendly messages
+    let userMessage = 'Unable to generate response. Please try again.';
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      const errorMsg = error.message.toLowerCase();
+
+      // API key errors
+      if (errorMsg.includes('api key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
+        userMessage = 'AI service authentication failed';
+        statusCode = 401;
+        console.error(`[${requestId}] Invalid API key`);
+      }
+      // Rate limit errors
+      else if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+        userMessage = 'Service temporarily busy. Please wait and try again.';
+        statusCode = 429;
+        console.error(`[${requestId}] Rate limit exceeded`);
+      }
+      // Network/service errors
+      else if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('503') || errorMsg.includes('502')) {
+        userMessage = 'AI service temporarily unavailable';
+        statusCode = 503;
+        console.error(`[${requestId}] Network/service error`);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         error: {
-          code: "internal_error",
-          message: "An unexpected error occurred",
-          statusCode: 500,
+          code: "upstream_error",
+          message: userMessage,
+          statusCode,
+          requestId, // Include for debugging
         },
       }),
       {
-        status: 500,
+        status: statusCode,
         headers: { "Content-Type": "application/json" },
       }
     );
