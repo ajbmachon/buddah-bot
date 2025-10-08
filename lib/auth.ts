@@ -16,13 +16,11 @@ function validateAuthEnv() {
   const required = [
     "AUTH_GOOGLE_ID",
     "AUTH_GOOGLE_SECRET",
-    "NEXTAUTH_SECRET",
+    "AUTH_SECRET", // Auth.js v5 uses AUTH_SECRET (not NEXTAUTH_SECRET)
   ];
 
-  // NEXTAUTH_URL only required in production (auto-detected in dev)
-  if (process.env.NODE_ENV === "production") {
-    required.push("NEXTAUTH_URL");
-  }
+  // Auth.js v5 auto-detects URL in production via trustHost: true
+  // NEXTAUTH_URL is optional but recommended for explicit control
 
   const missing = required.filter((key) => !process.env[key]);
 

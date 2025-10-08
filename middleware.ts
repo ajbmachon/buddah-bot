@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 /**
  * Next.js middleware for route protection.
+ * Auth.js v5 middleware pattern - simpler than v4.
  * Runs on Edge runtime before all requests.
  *
  * Protected routes:
