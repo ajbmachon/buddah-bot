@@ -13,16 +13,14 @@
 - Test: login → send message → receive streaming panel response
 
 **M2: Chat History Persistence (Day 2)**
-- **[MANUAL STEP]** Create Vercel KV database in Vercel Dashboard:
-  - Go to: Project → Storage → Create Database → Select "KV"
-  - Name: `buddahbot-kv`
-  - Click Create (environment variables auto-added to project)
-- Install `@vercel/kv`
-- Implement `lib/chat-storage.ts` utility functions
-- Update `/api/chat` to save messages after streaming
-- Update frontend to load thread history
-- Create `/api/threads/[threadId]` route
+- **[MANUAL STEP]** Create AssistantCloud account at https://cloud.assistant-ui.com
+  - Sign up and create project named `buddhabot`
+  - Get Frontend API URL and API key from dashboard
+  - Add to Vercel env vars: `NEXT_PUBLIC_ASSISTANT_BASE_URL` and `ASSISTANT_API_KEY`
+- Add `cloud` prop to `useChatRuntime` in `app/assistant.tsx` (5 lines of code)
+- Add `<ThreadList />` sidebar component
 - Test: send message → refresh → see history persisted
+- **See Epic 3 stories for detailed implementation**
 
 **M3: Polish & Launch (Day 2-3)**
 - Add minimal branding/styling

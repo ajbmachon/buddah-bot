@@ -1,8 +1,8 @@
-# Project Brief: BuddahBot
+# Project Brief: BuddhaBot
 
 ## Executive Summary
 
-BuddahBot is a lightweight spiritual wisdom chat application that makes a proven Hermes 4 AI prompt accessible to friends and family. Built with Next.js and Assistance UI, it provides authenticated users with streaming conversations featuring a panel of spiritual teachers (Eckhart Tolle, Tara Brach, Alan Watts, and others). This is a personal passion project focused on simplicity and ease of access—no commercialization, no over-engineering.
+BuddhaBot is a lightweight spiritual wisdom chat application that makes a proven Hermes 4 AI prompt accessible to friends and family. Built with Next.js and Assistance UI, it provides authenticated users with streaming conversations featuring a panel of spiritual teachers (Eckhart Tolle, Tara Brach, Alan Watts, and others). This is a personal passion project focused on simplicity and ease of access—no commercialization, no over-engineering.
 
 ## Problem Statement
 
@@ -139,4 +139,4 @@ Serverless Jamstack: Edge runtime for streaming, Node runtime for auth, no datab
 5. Invite initial users from trusted circle
 
 ### Development Handoff
-This brief provides full context for BuddahBot. The PRD (`docs/prd.md`) contains detailed implementation specifications, including exact system prompts (which must not be modified). Begin with M0 (Foundation) milestone, focusing on authentication first, then chat streaming with default panel mode.
+This brief provides full context for BuddhaBot. The PRD (`docs/prd.md`) contains detailed implementation specifications, including exact system prompts (which must not be modified). Begin with M0 (Foundation) milestone, focusing on authentication first, then chat streaming with default panel mode.

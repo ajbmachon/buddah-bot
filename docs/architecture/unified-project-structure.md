@@ -3,7 +3,7 @@
 **Current Implementation (Assistant UI CLI-generated)**
 
 ```
-buddah-bot/
+buddha-bot/
 ├── .github/
 │   └── workflows/
 │       └── ci.yaml                  # Vercel auto-deploys (optional CI checks)
@@ -56,7 +56,7 @@ buddah-bot/
 │   ├── types.ts                     # Shared TypeScript types
 │   └── api-client.ts                # API request wrapper (optional)
 ├── public/                          # Static assets
-│   └── logo.png                     # BuddahBot branding (future)
+│   └── logo.png                     # BuddhaBot branding (future)
 ├── docs/
 │   ├── brief.md                     # Project overview
 │   ├── prd/                         # Product requirements (sharded)

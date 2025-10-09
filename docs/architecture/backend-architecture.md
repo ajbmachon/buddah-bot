@@ -2,7 +2,7 @@
 
 ## Service Architecture: Serverless (Vercel)
 
-BuddahBot uses Vercel's serverless architecture with **dual runtime strategy**:
+BuddhaBot uses Vercel's serverless architecture with **dual runtime strategy**:
 - **Edge Runtime:** Chat streaming (`/api/chat`)
 - **Node Runtime:** Authentication (`/api/auth/*`)
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     const { messages } = ChatRequestSchema.parse(body);
 
     // 3. Get system prompt
-    const mode = (process.env.BUDDAHBOT_MODE as any) || "panel";
+    const mode = (process.env.BUDDHABOT_MODE as any) || "panel";
     const systemPrompt = getSystemPrompt(mode);
 
     // 4. Build Nous API request

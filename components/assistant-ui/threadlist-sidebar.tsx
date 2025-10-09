@@ -1,6 +1,5 @@
 import * as React from "react";
-import { Github, MessagesSquare } from "lucide-react";
-import Link from "next/link";
+import { MessagesSquare, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,21 +21,19 @@ export function ThreadListSidebar({
         <div className="aui-sidebar-header-content flex items-center justify-between">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
-                <Link
-                  href="https://assistant-ui.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className="aui-sidebar-header-icon-wrapper flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <MessagesSquare className="aui-sidebar-header-icon size-4" />
-                  </div>
-                  <div className="aui-sidebar-header-heading mr-6 flex flex-col gap-0.5 leading-none">
-                    <span className="aui-sidebar-header-title font-semibold">
-                      assistant-ui
-                    </span>
-                  </div>
-                </Link>
+              <SidebarMenuButton
+                size="lg"
+                className="cursor-default select-none hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                type="button"
+              >
+                <div className="aui-sidebar-header-icon-wrapper flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <MessagesSquare className="aui-sidebar-header-icon size-4" />
+                </div>
+                <div className="aui-sidebar-header-heading mr-6 flex flex-col gap-0.5 leading-none">
+                  <span className="aui-sidebar-header-title font-semibold">
+                    BuddhaBot
+                  </span>
+                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -49,21 +46,18 @@ export function ThreadListSidebar({
       <SidebarFooter className="aui-sidebar-footer border-t">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link
-                href="https://github.com/assistant-ui/assistant-ui"
-                target="_blank"
-              >
-                <div className="aui-sidebar-footer-icon-wrapper flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Github className="aui-sidebar-footer-icon size-4" />
-                </div>
-                <div className="aui-sidebar-footer-heading flex flex-col gap-0.5 leading-none">
-                  <span className="aui-sidebar-footer-title font-semibold">
-                    GitHub
-                  </span>
-                  <span>View Source</span>
-                </div>
-              </Link>
+            <SidebarMenuButton size="lg" type="button">
+              <div className="aui-sidebar-footer-icon-wrapper flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <User className="aui-sidebar-footer-icon size-4" />
+              </div>
+              <div className="aui-sidebar-footer-heading flex flex-col gap-0.5 leading-none text-left">
+                <span className="aui-sidebar-footer-title font-semibold">
+                  Profile
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Manage account
+                </span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

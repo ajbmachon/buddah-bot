@@ -17,7 +17,7 @@ Option A - **Magic Link** (recommended):
 - No passwords, no database
 
 ```env
-EMAIL_FROM=buddahbot@yourdomain.com
+EMAIL_FROM=buddhabot@yourdomain.com
 RESEND_API_KEY=...  # or SMTP config
 ```
 

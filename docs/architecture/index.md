@@ -1,8 +1,8 @@
-# BuddahBot Fullstack Architecture Document
+# BuddhaBot Fullstack Architecture Document
 
 ## Table of Contents
 
-- [BuddahBot Fullstack Architecture Document](#table-of-contents)
+- [BuddhaBot Fullstack Architecture Document](#table-of-contents)
   - [Introduction](./introduction.md)
     - [Starter Template or Existing Project](./introduction.md#starter-template-or-existing-project)
     - [Change Log](./introduction.md#change-log)

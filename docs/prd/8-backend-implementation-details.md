@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json()
 
   // Get system prompt based on mode
-  const mode = process.env.BUDDAHBOT_MODE || 'panel'
+  const mode = process.env.BUDDHABOT_MODE || 'panel'
   const systemPrompt = getSystemPromptForMode(mode)  // Returns EXACT prompt text
 
   // Build request for Nous API

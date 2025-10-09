@@ -26,7 +26,7 @@
 
 **Modes:**
 - [ ] Default panel mode active by default
-- [ ] Changing BUDDAHBOT_MODE env var switches prompt
+- [ ] Changing BUDDHABOT_MODE env var switches prompt
 - [ ] (Future) Custom panel and wisdom modes work
 
 **Deployment:**

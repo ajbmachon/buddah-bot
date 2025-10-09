@@ -2,7 +2,7 @@
 
 **Landing Page (Unauthenticated):**
 - Clean, minimal design
-- BuddahBot branding
+- BuddhaBot branding
 - Two sign-in options:
   - "Sign in with Google" (primary CTA)
   - "Sign in with Email" (secondary)

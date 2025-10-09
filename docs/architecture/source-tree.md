@@ -1,6 +1,6 @@
 # Source Tree Structure
 
-This document defines the canonical directory structure for BuddahBot. Follow this structure exactly when creating new files.
+This document defines the canonical directory structure for BuddhaBot. Follow this structure exactly when creating new files.
 
 **Source:** Derived from `unified-project-structure.md`, `frontend-architecture.md`, and `backend-architecture.md`
 
@@ -9,7 +9,7 @@ This document defines the canonical directory structure for BuddahBot. Follow th
 ## Root Directory Layout
 
 ```
-buddah-bot/
+buddha-bot/
 ├── app/                    # Next.js App Router pages and API routes
 ├── components/             # React components (organized by feature)
 ├── lib/                    # Shared utilities and configurations
@@ -143,7 +143,7 @@ docs/
 ```
 public/
 ├── favicon.ico             # Browser favicon
-└── logo.png                # BuddahBot branding
+└── logo.png                # BuddhaBot branding
 ```
 
 ---

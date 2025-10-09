@@ -1,4 +1,4 @@
-# BuddahBot 🧘
+# BuddhaBot 🧘
 
 A lightweight spiritual wisdom chat application powered by Hermes 4 AI, featuring a panel of spiritual teachers (Eckhart Tolle, Tara Brach, Alan Watts, and others).
 
@@ -18,8 +18,8 @@ A lightweight spiritual wisdom chat application powered by Hermes 4 AI, featurin
 
 1. **Clone repository:**
    ```bash
-   git clone https://github.com/yourusername/buddah-bot.git
-   cd buddah-bot
+   git clone https://github.com/yourusername/buddha-bot.git
+   cd buddha-bot
    ```
 
 2. **Install dependencies:**
@@ -78,7 +78,7 @@ AUTH_GOOGLE_SECRET=your_client_secret
 
 1. Sign up at [resend.com](https://resend.com)
 2. Navigate to **API Keys** → **Create API Key**
-   - Name: "BuddahBot Development"
+   - Name: "BuddhaBot Development"
    - Permission: **Sending access**
 3. Copy API key to `.env.local`
 
@@ -100,7 +100,36 @@ NOUS_API_KEY=your_nous_api_key
 HERMES_MODEL=Hermes-4-405B  # Or Hermes-4-70B for cheaper/faster
 ```
 
-#### 4. Generate Auth Secret
+#### 4. AssistantCloud Setup (5 minutes)
+
+AssistantCloud provides zero-config chat history persistence using Assistance UI's official cloud backend.
+
+1. Go to [cloud.assistant-ui.com](https://cloud.assistant-ui.com)
+2. Sign up for free account
+3. Create new project named `buddhabot`
+4. Copy **Frontend API URL** from dashboard (format: `https://api.assistant-ui.com/v1/<project-id>`)
+5. Generate and copy **API Key** from dashboard
+
+**Variables to set:**
+```bash
+NEXT_PUBLIC_ASSISTANT_BASE_URL=https://api.assistant-ui.com/v1/<your-project-id>
+ASSISTANT_API_KEY=aui_<your_api_key>
+```
+
+**Why AssistantCloud:**
+- Zero backend code for persistence
+- Automatic thread management
+- Built-in ThreadList component
+- Works with existing OAuth authentication
+- Can migrate to self-hosted later
+
+**Authenticated Mode:**
+- User IDs from OAuth sessions (Google/Email)
+- History synced across all devices
+- Full account-based persistence
+- Same user = same threads everywhere
+
+#### 5. Generate Auth Secret
 
 ```bash
 # Run this command and copy output to .env.local
@@ -161,13 +190,14 @@ See [`.env.local.example`](.env.local.example) for full template with all variab
 - ✅ Email magic link sign-in
 - ✅ Streaming chat with Hermes 4 AI
 - ✅ Panel mode (3 spiritual teachers respond)
+- ✅ **Chat history persistence** (automatic, per-browser)
 - ✅ Protected routes (authentication required)
 - ✅ Mobile responsive design
 
 ### Coming Soon
 
 - 🔄 Custom panel selection (choose specific teachers)
-- 🔄 Conversation history persistence
+- 🔄 Thread list sidebar (view all conversations)
 - 🔄 General wisdom mode (single-voice responses)
 - 🔄 UI polish and animations
 
@@ -191,7 +221,7 @@ See [`.env.local.example`](.env.local.example) for full template with all variab
 ## Project Structure
 
 ```
-buddah-bot/
+buddha-bot/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Authentication pages
 │   │   └── login/
@@ -265,7 +295,12 @@ npm run test         # Run tests (when added)
 ## Known Limitations (MVP)
 
 - ⏱️ Edge Function timeout: 25s for streaming to start, 300s max total
-- 💬 No conversation history yet (coming in Epic 3)
+- 💬 **Chat history**: Full persistence across devices
+  - Messages stored in AssistantCloud (persistent cloud storage)
+  - User identity from OAuth session (email/user ID)
+  - Same account = same history across all devices and browsers
+  - Sign out and sign back in = full history restored
+  - Threads tied to your authenticated account
 - 📧 Email delivery may take 1-2 minutes
 - 🚧 Google OAuth shows "unverified app" warning in Testing mode (safe to proceed)
 
@@ -288,6 +323,12 @@ npm run test         # Run tests (when added)
 - Consider using `Hermes-4-70B` (faster model)
 - Check Vercel function logs for errors
 
+### AssistantCloud Connection Issues
+- Verify `NEXT_PUBLIC_ASSISTANT_BASE_URL` includes project ID in format: `https://api.assistant-ui.com/v1/<project-id>`
+- Restart dev server after adding env vars (client-side vars require rebuild)
+- Check browser localStorage is enabled (not in incognito mode)
+- Verify project exists in AssistantCloud dashboard
+
 ### Build Errors
 - Run `npm run build` locally to test
 - Check for TypeScript errors
@@ -303,7 +344,9 @@ This is a personal project for friends and family. Not currently accepting exter
 
 ## License
 
-Private project - not licensed for public use.
+MIT License - See [LICENSE](LICENSE) file for details.
+
+Feel free to use, modify, and build upon this code for your own projects!
 
 ---
 

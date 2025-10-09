@@ -23,7 +23,8 @@ Cookie: authjs.session-token=<jwt>
 {
   "messages": [
     { "role": "user", "content": "What is the nature of suffering?" }
-  ]
+  ],
+  "threadId": "uuid-or-nanoid"
 }
 ```
 
@@ -31,6 +32,7 @@ Cookie: authjs.session-token=<jwt>
 - Max 20 messages per request
 - Each message max 2000 characters
 - Only `user` and `assistant` roles
+- `threadId` required for persistence (Story 3.3)
 
 ---
 
@@ -95,9 +97,144 @@ const payload = {
 
 **Key behaviors:**
 - System prompt never exposed to client
-- Full conversation context sent each request (stateless)
+- Full conversation context sent each request (stateless API)
 - Streaming piped directly (no buffering)
+- Messages saved to KV **after** streaming completes (Story 3.3)
 - Nous API errors mapped to standard format
+
+**Persistence flow:**
+```typescript
+// Handled automatically by AssistantCloud
+// No manual persistence code in /api/chat route
+// Messages save automatically after streaming via Assistance UI runtime
+```
+
+---
+
+## Endpoint 2: `GET /api/assistant-ui-token`
+
+**Purpose:** Fetch AssistantCloud workspace token for authenticated user
+
+**Runtime:** Vercel Node (serverless function)
+
+**Authentication:** Required (session cookie)
+
+---
+
+## Request
+
+**Headers:**
+```
+Cookie: authjs.session-token=<jwt>
+```
+
+**Body:** None (GET request)
+
+---
+
+## Response
+
+**Success (200 OK):**
+```json
+{
+  "token": "aui_workspace_abc123..."
+}
+```
+
+**Error (401 Unauthorized):**
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Error (500 Internal Server Error):**
+```json
+{
+  "error": "Failed to fetch workspace token"
+}
+```
+
+---
+
+## Implementation Notes
+
+**Server-side token fetch:**
+```typescript
+import { auth } from '@/auth';
+
+export const runtime = 'nodejs'; // Required for Auth.js
+
+export async function GET() {
+  // 1. Validate Auth.js session
+  const session = await auth();
+  if (!session?.user?.email) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // 2. Fetch AssistantCloud workspace token
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL}/workspaces`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.ASSISTANT_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.email, // Stable user identifier
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('AssistantCloud API error');
+    }
+
+    const { token } = await response.json();
+    return Response.json({ token });
+  } catch (error) {
+    console.error('Failed to fetch workspace token:', error);
+    return Response.json(
+      { error: 'Failed to fetch workspace token' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Key behaviors:**
+- Uses `session.user.email` as stable user ID (never changes for Google account)
+- `ASSISTANT_API_KEY` required (server-side only, not exposed to client)
+- Token cached by AssistantCloud (subsequent calls fast)
+- Client calls this endpoint on AssistantCloud initialization
+
+---
+
+## No Thread Management Endpoints Needed (Epic 3)
+
+**AssistantCloud Integration:**
+- Thread management handled client-side by Assistance UI
+- `/api/assistant-ui-token` provides authentication token
+- No custom `/api/threads` persistence routes needed
+- No manual message save/load endpoints
+- Thread list populated via `<ThreadList />` component (queries AssistantCloud directly)
+
+**Architecture:**
+```
+Client → AssistantCloud API (direct)
+  ├── Thread creation
+  ├── Message persistence
+  ├── Thread retrieval
+  └── Thread list
+```
+
+**Benefits:**
+- Zero backend persistence code
+- No additional API routes to maintain
+- Built-in error handling and retry logic
+- Automatic message batching and optimization
 
 ---
 
@@ -105,4 +242,4 @@ const payload = {
 
 **This is an internal API** (not public). Formal OpenAPI specs are overkill for MVP.
 
-See PRD Section 8 for full implementation example.
+See PRD Epic 2 and Epic 3 for full implementation examples.
