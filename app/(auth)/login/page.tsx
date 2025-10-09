@@ -87,7 +87,8 @@ export default function LoginPage() {
             BuddhaBot
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Spiritual wisdom through AI guidance
+            Wise guidance based on renowned books and authors of psychology,
+            medicine and spiritual traditions
           </p>
         </div>
 
@@ -207,7 +208,10 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  <form onSubmit={handleTestAccountSignIn} className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <form
+                    onSubmit={handleTestAccountSignIn}
+                    className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4"
+                  >
                     <p className="text-xs text-amber-800">
                       Development testing credentials:
                     </p>
@@ -255,9 +259,6 @@ export default function LoginPage() {
         )}
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-500">
-          By signing in, you agree to our terms of service
-        </p>
       </div>
     </div>
   );
