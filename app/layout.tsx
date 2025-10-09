@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BuddhaBot - Spiritual Wisdom Through AI",
-  description: "Access spiritual guidance from multiple wisdom traditions through AI-powered conversations",
+  title: "BuddhaBot - Spiritual Wisdom Guidance",
+  description: "Wise guidance based on renowned books and authors of psychology, medicine and spiritual traditions",
 };
 
 export default function RootLayout({

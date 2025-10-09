@@ -12,6 +12,13 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState("");
   const [emailSent, setEmailSent] = useState(false);
 
+  // Test account state (dev only)
+  const [testEmail, setTestEmail] = useState("");
+  const [testPassword, setTestPassword] = useState("");
+  const [isTestLoading, setIsTestLoading] = useState(false);
+  const [testError, setTestError] = useState("");
+  const isDev = process.env.NODE_ENV === "development";
+
   const handleGoogleSignIn = async () => {
     try {
       setIsGoogleLoading(true);
@@ -43,6 +50,31 @@ export default function LoginPage() {
       setEmailError("Failed to send magic link. Please try again.");
     } finally {
       setIsEmailLoading(false);
+    }
+  };
+
+  const handleTestAccountSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTestError("");
+
+    try {
+      setIsTestLoading(true);
+      const result = await signIn("credentials", {
+        email: testEmail,
+        password: testPassword,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setTestError("Invalid credentials");
+      } else if (result?.ok) {
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Test account sign-in error:", error);
+      setTestError("Failed to sign in. Please try again.");
+    } finally {
+      setIsTestLoading(false);
     }
   };
 
@@ -160,6 +192,64 @@ export default function LoginPage() {
                   )}
                 </Button>
               </form>
+
+              {/* Test Account (Development Only) */}
+              {isDev && (
+                <>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="bg-white px-2 text-slate-500">
+                        Test Account (Dev Only)
+                      </span>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleTestAccountSignIn} className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <p className="text-xs text-amber-800">
+                      Development testing credentials:
+                    </p>
+                    <div className="space-y-2">
+                      <Input
+                        type="email"
+                        placeholder="test@localhost"
+                        value={testEmail}
+                        onChange={(e) => setTestEmail(e.target.value)}
+                        disabled={isTestLoading}
+                        className="w-full bg-white"
+                      />
+                      <Input
+                        type="password"
+                        placeholder="test123"
+                        value={testPassword}
+                        onChange={(e) => setTestPassword(e.target.value)}
+                        disabled={isTestLoading}
+                        className="w-full bg-white"
+                      />
+                      {testError && (
+                        <p className="text-xs text-red-600">{testError}</p>
+                      )}
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={isTestLoading || !testEmail || !testPassword}
+                      variant="secondary"
+                      className="w-full"
+                    >
+                      {isTestLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                          Signing in...
+                        </span>
+                      ) : (
+                        "Sign in with test account"
+                      )}
+                    </Button>
+                  </form>
+                </>
+              )}
             </div>
           </>
         )}

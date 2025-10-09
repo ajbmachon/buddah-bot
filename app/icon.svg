@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Simple lotus flower icon in calming purple/sage tones -->
+  <circle cx="32" cy="32" r="32" fill="#7C6A99"/>
+
+  <!-- Lotus petals -->
+  <g fill="#B4A5C8" opacity="0.9">
+    <!-- Center petal -->
+    <ellipse cx="32" cy="36" rx="6" ry="10"/>
+
+    <!-- Left petals -->
+    <ellipse cx="22" cy="38" rx="5" ry="9" transform="rotate(-25 22 38)"/>
+    <ellipse cx="16" cy="40" rx="4" ry="8" transform="rotate(-45 16 40)"/>
+
+    <!-- Right petals -->
+    <ellipse cx="42" cy="38" rx="5" ry="9" transform="rotate(25 42 38)"/>
+    <ellipse cx="48" cy="40" rx="4" ry="8" transform="rotate(45 48 40)"/>
+  </g>
+
+  <!-- Meditation circle (representing stillness) -->
+  <circle cx="32" cy="28" r="4" fill="#E8DFF5"/>
+</svg>

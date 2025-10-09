@@ -45,37 +45,61 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  /* Calm spiritual color scheme - soft lavender/lilac backgrounds with purple accents */
+
+  /* Main backgrounds - very soft lavender (warm purple tint, not stark white) */
+  --background: oklch(0.96 0.02 300);  /* Soft lavender-white with purple undertone */
+  --foreground: oklch(0.25 0.015 280);  /* Dark charcoal with slight purple tint */
+
+  /* Card and elevated surfaces - slightly more purple tint */
+  --card: oklch(0.97 0.018 295);
+  --card-foreground: oklch(0.25 0.015 280);
+
+  /* Popovers and floating elements */
+  --popover: oklch(0.98 0.015 295);
+  --popover-foreground: oklch(0.25 0.015 280);
+
+  /* Primary - spiritual purple (consistent throughout) */
+  --primary: oklch(0.52 0.16 290);  /* Rich but soft purple for interactions */
+  --primary-foreground: oklch(0.98 0.01 300);  /* Light text on purple */
+
+  /* Secondary - light purple/lilac */
+  --secondary: oklch(0.90 0.03 295);  /* Light purple-tinted secondary */
+  --secondary-foreground: oklch(0.25 0.015 280);
+
+  /* Muted - for less prominent elements */
+  --muted: oklch(0.92 0.025 295);  /* Muted purple-tinted background */
+  --muted-foreground: oklch(0.48 0.02 285);  /* Medium gray with purple tint */
+
+  /* Accent - PURPLE (subtle hover/interaction color - barely darker than background) */
+  --accent: oklch(0.92 0.04 295);  /* Very light purple for subtle hover - just a hint darker */
+  --accent-foreground: oklch(0.25 0.015 280);  /* Keep same text color (no inversion needed) */
+
+  /* Destructive - soft rose/mauve (keeps purple harmony) */
+  --destructive: oklch(0.58 0.16 15);
+
+  /* Borders and inputs - subtle purple-tinted */
+  --border: oklch(0.88 0.015 295);  /* Soft purple-tinted border */
+  --input: oklch(0.94 0.02 295);  /* Input with slight purple */
+  --ring: oklch(0.52 0.16 290);  /* Focus ring matches primary purple */
+
+  /* Charts - purple-harmonious palette */
+  --chart-1: oklch(0.60 0.14 290);  /* Medium purple */
+  --chart-2: oklch(0.65 0.12 310);  /* Violet */
+  --chart-3: oklch(0.58 0.10 270);  /* Blue-purple */
+  --chart-4: oklch(0.72 0.10 340);  /* Rose-purple */
+  --chart-5: oklch(0.68 0.08 50);  /* Warm gold accent */
+
+  /* Sidebar - deeper lavender for subtle depth */
+  --sidebar: oklch(0.94 0.025 295);
+  --sidebar-foreground: oklch(0.25 0.015 280);
+  --sidebar-primary: oklch(0.52 0.16 290);
+  --sidebar-primary-foreground: oklch(0.98 0.01 300);
+  --sidebar-accent: oklch(0.90 0.03 295);
+  --sidebar-accent-foreground: oklch(0.25 0.015 280);
+  --sidebar-border: oklch(0.86 0.02 295);
+  --sidebar-ring: oklch(0.52 0.16 290);
 }
 
 .dark {
@@ -127,5 +151,27 @@
 
   body {
     @apply bg-background text-foreground;
+    font-size: 16px;  /* Minimum readable size */
+    line-height: 1.7;  /* Generous spacing for calm reading */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Enhanced readability for text content */
+  p {
+    line-height: 1.8;
+  }
+
+  /* Calm, smooth transitions */
+  * {
+    transition-duration: 150ms;
+    transition-timing-function: ease-in-out;
+  }
+
+  /* Remove transitions for reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition-duration: 0ms;
+    }
   }
 }

@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 // import Resend from "next-auth/providers/resend"; // Commented out - requires database adapter
 
 /**
@@ -51,6 +52,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
+    // Development-only test account for automated testing
+    // ONLY enabled in development mode, disabled in production
+    ...(process.env.NODE_ENV === "development"
+      ? [
+          Credentials({
+            name: "Test Account",
+            credentials: {
+              email: { label: "Email", type: "email" },
+              password: { label: "Password", type: "password" },
+            },
+            async authorize(credentials) {
+              // Hardcoded test account for local development and Playwright testing
+              if (
+                credentials?.email === "test@localhost" &&
+                credentials?.password === "test123"
+              ) {
+                return {
+                  id: "test-user-id",
+                  name: "Test User",
+                  email: "test@localhost",
+                };
+              }
+              return null;
+            },
+          }),
+        ]
+      : []),
     // Resend provider commented out - requires database adapter
     // Uncomment when adding database support in future
     // Resend({

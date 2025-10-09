@@ -54,11 +54,11 @@ export const Assistant = () => {
         <div className="flex h-dvh w-full pr-0.5">
           <ThreadListSidebar />
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
               <SidebarTrigger />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <div className="flex flex-1 items-center justify-between">
-                <h1 className="text-lg font-semibold">BuddhaBot</h1>
+                <h1 className="text-lg font-semibold text-primary">BuddhaBot</h1>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground">
                     {session.user?.name || session.user?.email}

@@ -105,7 +105,7 @@ const ThreadWelcome: FC = () => {
             className="aui-thread-welcome-message-motion-2 text-lg text-muted-foreground/65"
           >
             Share what&apos;s on your heart. You&apos;ll receive guidance from a panel of
-            wise teachers including Eckhart Tolle, Tara Brach and Gabor Maté.
+            wise teachers including Eckhart Tolle, Tara Brach, Gabor Maté, Joe Dispenza, Martha Beck and Pema Chödrön.
           </m.div>
         </div>
       </div>
