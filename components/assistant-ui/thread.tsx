@@ -104,8 +104,9 @@ const ThreadWelcome: FC = () => {
             transition={{ delay: 0.1 }}
             className="aui-thread-welcome-message-motion-2 text-lg text-muted-foreground/65"
           >
-            Share what&apos;s on your heart. You&apos;ll receive guidance from a panel of
-            wise teachers including Eckhart Tolle, Tara Brach, Gabor Maté, Joe Dispenza, Martha Beck and Pema Chödrön.
+            Share what&apos;s on your heart. You&apos;ll receive guidance from a
+            panel of wise teachers including Eckhart Tolle, Tara Brach, Gabor
+            Maté, Joe Dispenza, Martha Beck and Pema Chödrön.
           </m.div>
         </div>
       </div>
@@ -119,10 +120,10 @@ const ThreadSuggestions: FC = () => {
     <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-4 @md:grid-cols-2">
       {[
         {
-          title: "My partner and I keep arguing",
-          label: "and I feel hurt and unseen, how can I cope?",
+          title: "Hi panel, each briefly outline your specialities",
+          label: "so I know who to address my questions to?",
           action:
-            "My partner and I keep arguing and I feel hurt and unseen, how can I cope?",
+            "Hi panel, each briefly outline your specialities so I know who to address my questions to?",
         },
         {
           title: "I suffer in my job but can't quit",
@@ -136,10 +137,10 @@ const ThreadSuggestions: FC = () => {
           action: "I feel stuck in my life and don't know how to change",
         },
         {
-          title: "Everything feels overwhelming",
-          label: "too many things at once are going wrong",
+          title: "My partner and I keep arguing",
+          label: "and I feel hurt and unseen, how can I cope?",
           action:
-            "Everything feels overwhelming too many things at once are going wrong",
+            "My partner and I keep arguing and I feel hurt and unseen, how can I cope?",
         },
       ].map((suggestedAction, index) => (
         <m.div
