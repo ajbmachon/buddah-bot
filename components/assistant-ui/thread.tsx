@@ -106,7 +106,7 @@ const ThreadWelcome: FC = () => {
           >
             Share what&apos;s on your heart. You&apos;ll receive guidance from a
             panel of wise teachers including Eckhart Tolle, Tara Brach, Gabor
-            Maté, Joe Dispenza, Martha Beck and Pema Chödrön.
+            Maté, Joe Dispenza, Martha Beck, Thich Nhat Hanh and Pema Chödrön.
           </m.div>
         </div>
       </div>
