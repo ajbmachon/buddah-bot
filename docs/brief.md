@@ -51,7 +51,7 @@ A clean chat interface where users sign in (Google or Email), select a conversat
 - **Simple Authentication:** Google OAuth + Email magic links (no password management)
 - **Default Panel Mode:** 3 spiritual teachers respond conversationally to user questions
 - **Streaming Chat:** Sub-2s time-to-first-token, <300s completion
-- **Chat History:** Conversation persistence using Vercel KV (Redis) - messages saved and restored
+- **Chat History:** Conversation persistence using AssistantCloud - messages saved and restored
 - **Assistance UI Framework:** Voice input, message regeneration, markdown rendering all built-in
 - **Secure Configuration:** All secrets in Vercel environment variables
 
@@ -64,7 +64,7 @@ A clean chat interface where users sign in (Google or Email), select a conversat
 - RAG or document upload
 - Custom UI components
 
-**Note:** Conversation history/persistence was moved INTO MVP scope using Vercel KV (simple Redis storage).
+**Note:** Conversation history/persistence was moved INTO MVP scope using AssistantCloud (Assistance UI's native persistence layer).
 
 ### MVP Success Criteria
 User can authenticate, send a message, and receive a quality multi-voice spiritual response within 30 seconds of first visit.

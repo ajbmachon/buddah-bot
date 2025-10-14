@@ -149,9 +149,9 @@ Implement conversation history persistence using **AssistantCloud** (Assistance 
 - Graceful fallback to login if session expired
 
 **Rollback Plan:**
-- If AssistantCloud issues arise, can quickly implement Vercel KV fallback
+- If AssistantCloud issues arise, can fall back to local-only sessions (no persistence)
 - All chat streaming continues working (persistence is additive feature)
-- Research agent found Vercel KV pattern as alternative (documented)
+- Migration to self-hosted storage possible post-MVP if needed
 
 ## Definition of Done
 

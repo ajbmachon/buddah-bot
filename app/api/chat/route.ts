@@ -114,7 +114,9 @@ export async function POST(req: Request) {
       model: nous.chat(model),
       system: systemPrompt,
       messages: convertToModelMessages(messages),
-      temperature: 0.7,
+      temperature: 0.8,
+      // @ts-ignore - repetition_penalty may not be in type definitions but Nous may support it
+      repetition_penalty: 0.9,
     });
 
     console.log(`[${requestId}] Streaming response initiated`);
